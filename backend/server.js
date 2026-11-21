@@ -12,6 +12,7 @@ const admissionsRoutes = require('./routes/admissions');
 const adminRoutes = require('./routes/admin');
 const contentRoutes = require('./routes/content');
 const analyticsRoutes = require('./routes/analytics');
+const schoolRoutes = require('./routes/school');
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/admissions', admissionsRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/school-data', schoolRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Test API

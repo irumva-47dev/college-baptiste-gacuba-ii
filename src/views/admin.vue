@@ -16,6 +16,10 @@ const deletingData = ref(false)
 const admissions = ref([])
 const users = ref([])
 const contactMessages = ref([])
+const schoolItems = ref([])
+const schoolType = ref('announcements')
+const schoolDraft = reactive({ title: '', description: '', date: '', subject: '' })
+const resultsCsv = ref('')
 const analytics = ref({
   total: 0,
   today: 0,
@@ -121,6 +125,7 @@ async function loadAdminData() {
     analytics.value = visitOverview
     siteContent.setOverrides(parseSavedContent(rows))
     loadDraft()
+    await loadSchoolItems()
   } catch (error) {
     console.error('Admin data load error:', error)
     errorMessage.value = error.message
@@ -146,6 +151,76 @@ async function updateAdmission(admission, updates) {
     successMessage.value = 'Amakuru y’ubusabe yavuguruwe.'
   } catch (error) {
     console.error('Admission update error:', error)
+    errorMessage.value = error.message
+  }
+}
+
+async function loadSchoolItems() {
+  try {
+    schoolItems.value = await request(`/api/school-data/${schoolType.value}`)
+  } catch (error) {
+    schoolItems.value = []
+    errorMessage.value = error.message
+  }
+}
+
+watch(schoolType, loadSchoolItems)
+
+async function saveSchoolItem() {
+  if (!schoolDraft.title.trim()) {
+    errorMessage.value = 'Izina ry’itangazo cyangwa umutwe urakenewe.'
+    return
+  }
+  try {
+    await request(`/api/school-data/admin/${schoolType.value}`, {
+      method: 'POST',
+      body: JSON.stringify(schoolDraft)
+    })
+    Object.keys(schoolDraft).forEach(key => { schoolDraft[key] = '' })
+    await loadSchoolItems()
+    successMessage.value = 'Amakuru y’ishuri yabitswe.'
+  } catch (error) {
+    errorMessage.value = error.message
+  }
+}
+
+async function deleteSchoolItem(item) {
+  if (!window.confirm('Urifuza gusiba iki kintu?')) return
+  try {
+    await request(`/api/school-data/admin/${schoolType.value}/${item.id}`, { method: 'DELETE' })
+    await loadSchoolItems()
+    successMessage.value = 'Amakuru yasibwe.'
+  } catch (error) {
+    errorMessage.value = error.message
+  }
+}
+
+function parseResultsCsv(csv) {
+  const lines = csv.split(/\r?\n/).map(line => line.trim()).filter(Boolean)
+  if (lines.length < 2) return []
+  const headers = lines.shift().split(',').map(value => value.trim().toLowerCase())
+  return lines.map(line => {
+    const values = line.split(',').map(value => value.trim())
+    const row = {}
+    headers.forEach((header, index) => { row[header] = values[index] || '' })
+    return row
+  })
+}
+
+async function importResults() {
+  const rows = parseResultsCsv(resultsCsv.value)
+  if (!rows.length) {
+    errorMessage.value = 'CSV y’amanota ifite header n’imirongo itazuyaza.'
+    return
+  }
+  try {
+    const result = await request('/api/school-data/admin/results/import', {
+      method: 'POST',
+      body: JSON.stringify({ rows })
+    })
+    resultsCsv.value = ''
+    successMessage.value = result.message
+  } catch (error) {
     errorMessage.value = error.message
   }
 }
@@ -315,6 +390,9 @@ onMounted(loadAdminData)
       </button>
       <button :class="{ active: tab === 'analytics' }" @click="tab = 'analytics'">
         Abasura urubuga
+      </button>
+      <button :class="{ active: tab === 'school' }" @click="tab = 'school'; loadSchoolItems()">
+        Amakuru y’ishuri
       </button>
       <button type="button" @click="loadAdminData">Kuvugurura</button>
     </nav>

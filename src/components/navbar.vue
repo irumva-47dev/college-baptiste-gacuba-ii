@@ -59,6 +59,12 @@
     </router-link>
   </li>
 
+  <li><router-link to="/portal" @click="closeMenu">Portal</router-link></li>
+  <li><router-link to="/announcements" @click="closeMenu">Amatangazo</router-link></li>
+  <li><router-link to="/calendar" @click="closeMenu">Ingengabihe</router-link></li>
+  <li><router-link to="/teachers" @click="closeMenu">Abarimu</router-link></li>
+  <li><router-link to="/parents" @click="closeMenu">Ababyeyi</router-link></li>
+
   <li>
     <router-link to="/admin" @click="closeMenu">
       {{ content.admin }}

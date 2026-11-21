@@ -12,7 +12,7 @@ const siteContent = useSiteContentStore()
 const translations = {
   en: {
     schoolName: 'College Baptiste Gacuba II',
-    locationDetails: 'Gisenyi Sector, Rubavu District, Rwanda',
+    locationDetails: 'Western Province, Rubavu District, Gisenyi Sector, Mbugangari Cell, Abahuje Village',
     title: 'Contact Our School',
     subtitle: 'We are happy to hear from you. Contact College Baptiste Gacuba II.',
     getInTouch: 'Get In Touch',
@@ -41,7 +41,7 @@ const translations = {
 
   rw: {
     schoolName: 'College Baptiste Gacuba II',
-    locationDetails: 'Umurenge wa Gisenyi, Akarere ka Rubavu, Rwanda',
+    locationDetails: 'Intara y’Iburengerazuba, Akarere ka Rubavu, Umurenge wa Gisenyi, Akagari ka Mbugangari, Umudugudu w’Abahuje',
     title: 'Twandikire',
     subtitle: 'Twishimiye kumva ibitekerezo byanyu. Twandikire kuri College Baptiste Gacuba II.',
     getInTouch: 'Tuganire',
