@@ -16,12 +16,16 @@ const form = reactive({
   religion: '',
   course: '',
   studyLevel: '',
+  sport: '',
   village: '',
   district: '',
   sector: '',
   province: '',
-  parentNames: '',
-  parentPhone: ''
+  fatherNames: '',
+  fatherPhone: '',
+  motherNames: '',
+  motherPhone: '',
+  insurance: ''
 })
 
 const translations = {
@@ -43,14 +47,28 @@ const translations = {
     software: 'Software Development',
     accounting: 'Accounting',
     studyLevel: 'Year / level applying for',
+    sport: 'Sport played',
+    chooseSport: 'Choose sport',
+    sports: 'Football',
+    sportBasketball: 'Basketball',
+    sportVolleyball: 'Volleyball',
+    sportAthletics: 'Athletics',
+    sportNone: 'No sport',
     address: 'Home Address',
     village: 'Village',
     district: 'District',
     sector: 'Sector',
     province: 'Province',
     parentInfo: 'Parent or Guardian',
-    parentNames: 'Parent or guardian full name(s)',
-    parentPhone: 'Parent or guardian phone number',
+    fatherNames: 'Father full name',
+    fatherPhone: 'Father phone number',
+    motherNames: 'Mother full name',
+    motherPhone: 'Mother phone number',
+    insurance: 'Health insurance used',
+    insuranceChoose: 'Choose insurance',
+    insuranceRssb: 'RSSB',
+    insurancePrivate: 'Private insurance',
+    insuranceNone: 'No insurance',
     submit: 'Submit Application',
     submitting: 'Submitting...',
     requestError: 'The application could not be saved. Please try again.',
@@ -80,14 +98,28 @@ const translations = {
     software: 'Software Development',
     accounting: 'Accounting (Ibaruramari)',
     studyLevel: 'Umwaka cyangwa urwego asaba kwigamo',
+    sport: 'Umukino akina',
+    chooseSport: 'Hitamo umukino',
+    sports: 'Umupira w’amaguru',
+    sportBasketball: 'Basketball',
+    sportVolleyball: 'Volleyball',
+    sportAthletics: 'Imikino y’amaguru',
+    sportNone: 'Nta mukino',
     address: 'Aho Umunyeshuri Atuye',
     village: 'Umudugudu',
     district: 'Akarere',
     sector: 'Umurenge',
     province: 'Intara',
     parentInfo: 'Amakuru y’Umubyeyi cyangwa Umurera',
-    parentNames: 'Amazina y’umubyeyi cyangwa umurera',
-    parentPhone: 'Nimero ya telefoni y’umubyeyi cyangwa umurera',
+    fatherNames: 'Amazina ya papa',
+    fatherPhone: 'Nimero ya telefoni ya papa',
+    motherNames: 'Amazina ya mama',
+    motherPhone: 'Nimero ya telefoni ya mama',
+    insurance: 'Ubwishingizi afite',
+    insuranceChoose: 'Hitamo ubwishingizi',
+    insuranceRssb: 'RSSB',
+    insurancePrivate: 'Ubwishingizi bw’ikigo cyihariye',
+    insuranceNone: 'Nta bwishingizi',
     submit: 'Ohereza Ubusabe',
     submitting: 'Ubusabe burimo koherezwa...',
     requestError: 'Ubusabe ntibwabitswe. Ongera ugerageze.',
@@ -114,6 +146,16 @@ const availableLevels = computed(() => ({
   'Software Development': ['L3', 'L4', 'L5'],
   Accounting: ['S4', 'S5', 'S6']
 }[form.course] || []))
+
+function levelLabel(level) {
+  if (form.course === 'Accounting') {
+    return `${level} Accounting`
+  }
+  if (form.course === 'Software Development') {
+    return `${level} Software Development`
+  }
+  return level
+}
 
 watch(() => form.course, () => {
   if (!availableLevels.value.includes(form.studyLevel)) {
@@ -212,8 +254,20 @@ function resetForm() {
             <select v-model="form.studyLevel" :disabled="!availableLevels.length" required>
               <option value="" disabled>{{ content.choose }}</option>
               <option v-for="level in availableLevels" :key="level" :value="level">
-                {{ level }}
+                {{ levelLabel(level) }}
               </option>
+            </select>
+          </label>
+
+          <label>
+            {{ content.sport }}
+            <select v-model="form.sport" required>
+              <option value="" disabled>{{ content.chooseSport }}</option>
+              <option value="Football">{{ content.sports }}</option>
+              <option value="Basketball">{{ content.sportBasketball }}</option>
+              <option value="Volleyball">{{ content.sportVolleyball }}</option>
+              <option value="Athletics">{{ content.sportAthletics }}</option>
+              <option value="None">{{ content.sportNone }}</option>
             </select>
           </label>
         </div>
@@ -245,12 +299,29 @@ function resetForm() {
         <h2>{{ content.parentInfo }}</h2>
         <div class="form-grid">
           <label>
-            {{ content.parentNames }}
-            <input v-model.trim="form.parentNames" maxlength="200" required />
+            {{ content.fatherNames }}
+            <input v-model.trim="form.fatherNames" maxlength="150" required />
           </label>
           <label>
-            {{ content.parentPhone }}
-            <input v-model.trim="form.parentPhone" type="tel" maxlength="30" required />
+            {{ content.fatherPhone }}
+            <input v-model.trim="form.fatherPhone" type="tel" maxlength="30" required />
+          </label>
+          <label>
+            {{ content.motherNames }}
+            <input v-model.trim="form.motherNames" maxlength="150" required />
+          </label>
+          <label>
+            {{ content.motherPhone }}
+            <input v-model.trim="form.motherPhone" type="tel" maxlength="30" required />
+          </label>
+          <label>
+            {{ content.insurance }}
+            <select v-model="form.insurance" required>
+              <option value="" disabled>{{ content.insuranceChoose }}</option>
+              <option value="RSSB">{{ content.insuranceRssb }}</option>
+              <option value="Private">{{ content.insurancePrivate }}</option>
+              <option value="None">{{ content.insuranceNone }}</option>
+            </select>
           </label>
         </div>
         </div>

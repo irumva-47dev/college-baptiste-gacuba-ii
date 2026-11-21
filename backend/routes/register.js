@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const db = require('../config/database');
+const { getDatabase } = require('../config/database');
 
 const router = express.Router();
 
@@ -38,15 +38,25 @@ router.post('/', async (req, res) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 12);
-    const [result] = await db.execute(
-      'INSERT INTO users (full_name, email, phone, password) VALUES (?, ?, ?, ?)',
-      [fullName, email, phone, passwordHash]
-    );
+    const users = getDatabase().collection('users');
+    const existing = await users.findOne({ email });
+    if (existing) {
+      return res.status(409).json({ message: 'Iyi meyili isanzwe ifite konti.' });
+    }
+    const result = await users.insertOne({
+      full_name: fullName,
+      email,
+      phone,
+      password: passwordHash,
+      role: 'student',
+      is_active: true,
+      created_at: new Date()
+    });
 
     return res.status(201).json({
       message: 'Konti yafunguwe neza.',
       user: {
-        id: result.insertId,
+        id: result.insertedId.toString(),
         full_name: fullName,
         email,
         phone

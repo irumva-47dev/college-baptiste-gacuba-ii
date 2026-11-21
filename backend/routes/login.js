@@ -2,7 +2,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const { getDatabase } = require('../config/database');
 
 const router = express.Router();
 
@@ -22,18 +22,14 @@ router.post('/', async (req, res) => {
     }
 
     // Find user in database
-    const [users] = await db.execute(
-      'SELECT id, full_name, email, password, role, is_active FROM users WHERE email = ?',
-      [email]
-    );
+    const user = await getDatabase().collection('users').findOne({ email });
 
-    if (users.length === 0 || !users[0].is_active) {
+    if (!user || !user.is_active) {
       return res.status(401).json({
         message: 'Invalid email or password.'
       });
     }
 
-    const user = users[0];
 
     // Compare password with hashed password
     const passwordMatch = await bcrypt.compare(
@@ -61,7 +57,7 @@ router.post('/', async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: user.id,
+        id: user._id.toString(),
         email: user.email,
         role
       },
@@ -74,7 +70,7 @@ router.post('/', async (req, res) => {
       message: 'Login successful.',
       token,
       user: {
-        id: user.id,
+        id: user._id.toString(),
         full_name: user.full_name,
         email: user.email,
         role

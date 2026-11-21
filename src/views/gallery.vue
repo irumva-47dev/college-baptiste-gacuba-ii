@@ -19,7 +19,7 @@ const schoolContent = computed(() => {
 })
 const photos = computed(() => [
   { id: 'students', name: schoolContent.value.photoStudents, url: '/st.png' },
-  { id: 'grounds', name: schoolContent.value.photoGrounds, url: '/plygraund.jpg' },
+  { id: 'grounds', name: schoolContent.value.photoGrounds, url: '/schol.png' },
   { id: 'campus', name: schoolContent.value.photoCampus, url: '/schlchch.jpg' },
   ...uploadedPhotos.value
 ])
@@ -164,7 +164,7 @@ onBeforeUnmount(() => {
   color: white;
   background:
     linear-gradient(105deg, rgba(8, 20, 36, 0.9), rgba(8, 20, 36, 0.58)),
-    url('/plygraund.jpg') center 42% / cover no-repeat;
+    url('/schol.png') center 42% / cover no-repeat;
 }
 
 .hero-label {

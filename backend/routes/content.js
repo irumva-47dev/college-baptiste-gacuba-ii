@@ -1,13 +1,11 @@
 const express = require('express');
-const db = require('../config/database');
+const { getDatabase } = require('../config/database');
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    const [rows] = await db.execute(
-      'SELECT page, language, content_key, content_value FROM site_content'
-    );
+    const rows = await getDatabase().collection('site_content').find().toArray();
     const content = {};
 
     for (const row of rows) {

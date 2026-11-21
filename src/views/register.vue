@@ -254,7 +254,7 @@ async function registerUser() {
   padding: 50px 20px;
   background:
     linear-gradient(rgba(8, 20, 36, 0.62), rgba(8, 20, 36, 0.62)),
-    url('/plygraund.jpg') center 42% / cover no-repeat;
+    url('/schol.png') center 42% / cover no-repeat;
 }
 
 .register-card {

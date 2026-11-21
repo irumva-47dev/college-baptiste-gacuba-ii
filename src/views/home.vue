@@ -79,7 +79,7 @@ const reasons = computed(() => [
 
     <section class="intro">
       <div class="intro-media">
-        <img src="/st.png" :alt="content.photoStudents" />
+        <img src="/schlchch.jpg" :alt="content.photoStudents" />
       </div>
 
       <div class="intro-copy">
@@ -133,7 +133,7 @@ const reasons = computed(() => [
       </div>
 
       <div class="why-media">
-        <img src="/plygraund.jpg" :alt="content.photoGrounds" />
+        <img src="/schol.png" :alt="content.photoGrounds" />
       </div>
     </section>
 
@@ -149,7 +149,7 @@ const reasons = computed(() => [
           <img src="/st.png" :alt="content.photoStudents" />
         </figure>
         <figure>
-          <img src="/plygraund.jpg" :alt="content.photoGrounds" />
+          <img src="/schol.png" :alt="content.photoGrounds" />
         </figure>
         <figure>
           <img src="/schlchch.jpg" :alt="content.photoCampus" />
@@ -228,7 +228,7 @@ const reasons = computed(() => [
   color: #fff;
   background:
     linear-gradient(105deg, rgba(8, 20, 36, 0.88) 0%, rgba(8, 20, 36, 0.62) 48%, rgba(8, 20, 36, 0.38) 100%),
-    url('/plygraund.jpg') center 42% / cover no-repeat;
+    url('/schol.png') center 42% / cover no-repeat;
 }
 
 .hero {

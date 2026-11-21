@@ -15,18 +15,55 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from './components/Navbar.vue'
 import Footer from './components/Footer.vue'
 import { useSiteContentStore } from './stores/siteContent'
+import { apiUrl } from './services/api'
 
 const siteContent = useSiteContentStore()
+const route = useRoute()
+
+function getVisitSessionId() {
+  let sessionId = sessionStorage.getItem('visitSessionId')
+  if (!sessionId) {
+    sessionId = crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    sessionStorage.setItem('visitSessionId', sessionId)
+  }
+  return sessionId
+}
+
+async function recordPageVisit(to) {
+  try {
+    await fetch(apiUrl('/api/analytics/visit'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: getVisitSessionId(),
+        path: to.fullPath,
+        name: String(to.name || to.path),
+        referrer: document.referrer || ''
+      })
+    })
+  } catch (error) {
+    console.error('Page visit tracking error:', error)
+  }
+}
 
 onMounted(() => {
   siteContent.load().catch((error) => {
     console.error('Website content load error:', error)
   })
+  recordPageVisit(route)
 })
+
+watch(
+  () => route.fullPath,
+  () => recordPageVisit(route)
+)
 </script>
 
 <style>

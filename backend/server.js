@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const db = require('./config/database');
+const { connectDatabase } = require('./config/database');
 
 const loginRoutes = require('./routes/login');
 const registerRoutes = require('./routes/register');
@@ -11,6 +11,7 @@ const contactRoutes = require('./routes/contact');
 const admissionsRoutes = require('./routes/admissions');
 const adminRoutes = require('./routes/admin');
 const contentRoutes = require('./routes/content');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/register', registerRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/admissions', admissionsRoutes);
 app.use('/api/content', contentRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Test API
@@ -35,14 +37,11 @@ app.get('/', (req, res) => {
   });
 });
 
-// Connect to MySQL before starting server
+// Connect to MongoDB before starting server
 async function startServer() {
   try {
-    const connection = await db.getConnection();
-
-    console.log('MySQL connected successfully!');
-
-    connection.release();
+    await connectDatabase();
+    console.log('MongoDB connected successfully!');
 
     const PORT = process.env.PORT || 5000;
 

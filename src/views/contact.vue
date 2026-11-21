@@ -254,7 +254,7 @@ async function sendMessage() {
 .contact-hero {
   background:
     linear-gradient(105deg, rgba(8, 20, 36, 0.9), rgba(8, 20, 36, 0.58)),
-    url('/plygraund.jpg') center 42% / cover no-repeat;
+    url('/schol.png') center 42% / cover no-repeat;
   text-align: center;
   padding: 65px 20px;
 }

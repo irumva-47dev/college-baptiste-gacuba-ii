@@ -27,12 +27,14 @@ npm install
 
 ### Database setup
 
-Start MySQL/MariaDB in XAMPP. Create the database with `backend/database.sql`, then apply every
-`*-migration.sql` file in `backend/` to an existing database. Configure the
-connection in `backend/.env` using `backend/.env.example`, then start the API
-with `node server.js` from `backend/`. Set `FRONTEND_URL` to the frontend
-origin. Copy the root `.env.example` to `.env` and set `VITE_API_BASE_URL` if
-the API is not at `http://localhost:5000`.
+Start MySQL/MariaDB in XAMPP. For a new database, import `backend/database.sql`.
+For an existing database, apply only migrations that have not already been run;
+`backend/contact-migration.sql` creates the contact-message table used by the
+contact form and admin inbox. Configure the connection in `backend/.env` using
+`backend/.env.example`, then start the API with `node server.js` from
+`backend/`. Set `FRONTEND_URL` to the frontend origin. Copy the root
+`.env.example` to `.env` and set `VITE_API_BASE_URL` if the API is not at
+`http://localhost:5000`.
 
 ### Compile and Hot-Reload for Development
 

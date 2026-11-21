@@ -196,7 +196,7 @@ const content = computed(() => {
   padding: 70px 20px;
   background:
     linear-gradient(105deg, rgba(8, 20, 36, 0.9), rgba(8, 20, 36, 0.58)),
-    url('/plygraund.jpg') center 42% / cover no-repeat;
+    url('/schol.png') center 42% / cover no-repeat;
   color: white;
 }
 

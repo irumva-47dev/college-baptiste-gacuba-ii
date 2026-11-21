@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../config/database');
+const { getDatabase } = require('../config/database');
 
 const router = express.Router();
 const courses = ['O-Level', 'Software Development', 'Accounting'];
@@ -45,7 +45,23 @@ router.post('/', async (req, res) => {
   const parentPhone = typeof body.parentPhone === 'string'
     ? body.parentPhone.trim()
     : '';
-  const phone = parentPhone;
+  const sport = typeof body.sport === 'string' ? body.sport : '';
+  const fatherNames = typeof body.fatherNames === 'string'
+    ? body.fatherNames.trim()
+    : '';
+  const fatherPhone = typeof body.fatherPhone === 'string'
+    ? body.fatherPhone.trim()
+    : '';
+  const motherNames = typeof body.motherNames === 'string'
+    ? body.motherNames.trim()
+    : '';
+  const motherPhone = typeof body.motherPhone === 'string'
+    ? body.motherPhone.trim()
+    : '';
+  const insurance = typeof body.insurance === 'string'
+    ? body.insurance
+    : '';
+  const phone = fatherPhone || parentPhone;
   const email = typeof body.email === 'string'
     ? body.email.trim().toLowerCase()
     : '';
@@ -61,8 +77,14 @@ router.post('/', async (req, res) => {
     !district ||
     !sector ||
     !province ||
-    !parentNames ||
-    !parentPhone
+    !sport ||
+    !fatherNames ||
+    !fatherPhone ||
+    !motherNames ||
+    !motherPhone ||
+    !insurance ||
+    !['Football', 'Basketball', 'Volleyball', 'Athletics', 'None'].includes(sport) ||
+    !['RSSB', 'Private', 'None'].includes(insurance)
   ) {
     return res.status(400).json({
       message: 'Uzuza amakuru yose asabwa, uhitemo isomo n’igitsina.'
@@ -73,6 +95,12 @@ router.post('/', async (req, res) => {
     applicantName.length > 150 ||
     religion.length > 100 ||
     phone.length > 30 ||
+    fatherNames.length > 150 ||
+    fatherPhone.length > 30 ||
+    motherNames.length > 150 ||
+    motherPhone.length > 30 ||
+    sport.length > 30 ||
+    insurance.length > 30 ||
     village.length > 100 ||
     district.length > 100 ||
     sector.length > 100 ||
@@ -88,34 +116,35 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const [result] = await db.execute(
-      `INSERT INTO admissions (
-        applicant_name, email, phone, gender, religion, course, study_level,
-        village, district, sector, province, parent_names, parent_phone,
-        registration_fee, payment_status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        applicantName,
-        email || null,
-        phone,
-        gender,
-        religion,
-        course,
-        studyLevel,
-        village,
-        district,
-        sector,
-        province,
-        parentNames,
-        parentPhone,
-        3000,
-        'unpaid'
-      ]
-    );
+    const result = await getDatabase().collection('admissions').insertOne({
+      applicant_name: applicantName,
+      email: email || null,
+      phone,
+      gender,
+      religion,
+      course,
+      study_level: studyLevel,
+      sport,
+      village,
+      district,
+      sector,
+      province,
+      father_names: fatherNames,
+      father_phone: fatherPhone,
+      mother_names: motherNames,
+      mother_phone: motherPhone,
+      insurance,
+      parent_names: fatherNames,
+      parent_phone: fatherPhone,
+      registration_fee: 3000,
+      payment_status: 'unpaid',
+      status: 'pending',
+      application_date: new Date()
+    });
 
     return res.status(201).json({
       message: 'Ubusabe bwo kwiga bwakiriwe.',
-      applicationId: result.insertId,
+      applicationId: result.insertedId.toString(),
       registrationFee: 3000,
       paymentNumber: '0795083641',
       paymentStatus: 'unpaid'

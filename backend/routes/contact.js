@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../config/database');
+const { getDatabase } = require('../config/database');
 
 const router = express.Router();
 const recipient = 'irumvamugisha47@gmail.com';
@@ -35,10 +35,13 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    await db.execute(
-      'INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)',
-      [name, email, subject, message]
-    );
+    await getDatabase().collection('contact_messages').insertOne({
+      name,
+      email,
+      subject,
+      message,
+      created_at: new Date()
+    });
 
     const smtpPort = Number(process.env.SMTP_PORT || 465);
     const smtpUser = process.env.SMTP_USER;

@@ -12,9 +12,18 @@ const loading = ref(false)
 const saving = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const deletingData = ref(false)
 const admissions = ref([])
 const users = ref([])
 const contactMessages = ref([])
+const analytics = ref({
+  total: 0,
+  today: 0,
+  week: 0,
+  uniqueSessions: 0,
+  byPath: [],
+  recent: []
+})
 const adminEmail = ref('')
 const selectedPage = ref('home')
 const selectedLanguage = ref('rw')
@@ -48,6 +57,14 @@ async function request(path, options = {}) {
       ...options.headers
     }
   })
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.includes('application/json')) {
+    throw new Error(
+      response.ok
+        ? 'Server yasubije ibisubizo bitari JSON.'
+        : `Server ntabonetse (${response.status}).`
+    )
+  }
   const data = await response.json()
 
   if (!response.ok) {
@@ -91,15 +108,17 @@ async function loadAdminData() {
   errorMessage.value = ''
 
   try {
-    const [overview, rows, messages] = await Promise.all([
+    const [overview, rows, messages, visitOverview] = await Promise.all([
       request('/api/admin/overview'),
       request('/api/admin/content'),
-      request('/api/admin/contacts')
+      request('/api/admin/contacts'),
+      request('/api/analytics/overview')
     ])
     admissions.value = overview.admissions
     users.value = overview.users
     contactMessages.value = messages
     adminEmail.value = overview.adminEmail
+    analytics.value = visitOverview
     siteContent.setOverrides(parseSavedContent(rows))
     loadDraft()
   } catch (error) {
@@ -210,6 +229,48 @@ async function restoreDefaults() {
   }
 }
 
+async function deleteAllData() {
+  if (!window.confirm(
+    'Ibi bizasiba ubusabe bwose, ubutumwa bwose, n’konti z’abakoresha zose zitari admin. Ntibishobora gusubizwa. Komeza?'
+  )) {
+    return
+  }
+
+  const confirmation = window.prompt(
+    'Andika "SIBA BYOSE" kugira ngo wemeze gusiba amakuru yose.'
+  )
+  if (confirmation !== 'SIBA BYOSE') {
+    return
+  }
+
+  deletingData.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  try {
+    const result = await request('/api/admin/data', { method: 'DELETE' })
+    admissions.value = []
+    contactMessages.value = []
+    users.value = users.value.filter(user =>
+      user.email.toLowerCase() === adminEmail.value.toLowerCase()
+    )
+    analytics.value = {
+      total: 0,
+      today: 0,
+      week: 0,
+      uniqueSessions: 0,
+      byPath: [],
+      recent: []
+    }
+    successMessage.value = `Amakuru yasibwe: ${result.deleted.admissions} ubusabe, ${result.deleted.contactMessages} ubutumwa, ${result.deleted.users} konti, na ${result.deleted.pageVisits || 0} sura.`
+  } catch (error) {
+    console.error('Admin data deletion error:', error)
+    errorMessage.value = error.message
+  } finally {
+    deletingData.value = false
+  }
+}
+
 function logout() {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
@@ -226,7 +287,17 @@ onMounted(loadAdminData)
         <p class="eyebrow">COLLEGE BAPTISTE GACUBA II</p>
         <h1>Ubuyobozi bw’urubuga</h1>
       </div>
-      <button class="logout-button" type="button" @click="logout">Sohoka</button>
+      <div class="header-actions">
+        <button
+          class="danger-button"
+          type="button"
+          :disabled="deletingData"
+          @click="deleteAllData"
+        >
+          {{ deletingData ? 'Birimo gusibwa...' : 'Siba amakuru yose' }}
+        </button>
+        <button class="logout-button" type="button" @click="logout">Sohoka</button>
+      </div>
     </header>
 
     <nav class="tabs" aria-label="Ibice by’ubuyobozi">
@@ -241,6 +312,9 @@ onMounted(loadAdminData)
       </button>
       <button :class="{ active: tab === 'content' }" @click="tab = 'content'">
         Amagambo y’urubuga
+      </button>
+      <button :class="{ active: tab === 'analytics' }" @click="tab = 'analytics'">
+        Abasura urubuga
       </button>
       <button type="button" @click="loadAdminData">Kuvugurura</button>
     </nav>
@@ -271,11 +345,17 @@ onMounted(loadAdminData)
                 <small>{{ item.email || item.phone }}</small>
                 <small>{{ item.gender }} · {{ item.religion }}</small>
               </td>
-              <td>{{ item.course }} · {{ item.study_level }}</td>
+              <td>
+                {{ item.course }} · {{ item.study_level }}
+                <small>Umukino: {{ item.sport || '-' }}</small>
+              </td>
               <td>{{ [item.village, item.sector, item.district, item.province].filter(Boolean).join(', ') }}</td>
               <td>
-                {{ item.parent_names }}
-                <small>{{ item.parent_phone }}</small>
+                Papa: {{ item.father_names || item.parent_names || '-' }}
+                <small>{{ item.father_phone || item.parent_phone || '-' }}</small>
+                Mama: {{ item.mother_names || '-' }}
+                <small>{{ item.mother_phone || '-' }}</small>
+                <small>Ubwishingizi: {{ item.insurance || '-' }}</small>
               </td>
               <td>
                 <strong>{{ Number(item.registration_fee).toLocaleString() }} Frw</strong>
@@ -330,6 +410,40 @@ onMounted(loadAdminData)
             </tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <section v-if="tab === 'analytics' && !loading" class="panel">
+      <h2>Abasuye urubuga</h2>
+      <div class="analytics-cards">
+        <div><strong>{{ analytics.total }}</strong><span>Umubare w’ibihe urubuga rusuwe</span></div>
+        <div><strong>{{ analytics.today }}</strong><span>Uyu munsi</span></div>
+        <div><strong>{{ analytics.week }}</strong><span>Iminsi 7 ishize</span></div>
+        <div><strong>{{ analytics.uniqueSessions }}</strong><span>Sessions zitandukanye</span></div>
+      </div>
+
+      <div class="analytics-grid">
+        <div>
+          <h3>Pages zakunze gusurwa</h3>
+          <div v-if="!analytics.byPath.length" class="empty-state">Nta sura ryanditswe.</div>
+          <ol v-else class="path-list">
+            <li v-for="item in analytics.byPath" :key="item.path">
+              <code>{{ item.path }}</code>
+              <strong>{{ item.count }}</strong>
+            </li>
+          </ol>
+        </div>
+
+        <div>
+          <h3>Surwa ziheruka</h3>
+          <div v-if="!analytics.recent.length" class="empty-state">Nta sura ryanditswe.</div>
+          <div v-else class="recent-visits">
+            <div v-for="item in analytics.recent" :key="item.id">
+              <code>{{ item.path }}</code>
+              <small>{{ new Date(item.visited_at).toLocaleString() }}</small>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -434,6 +548,12 @@ onMounted(loadAdminData)
   margin: 0 auto 24px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .eyebrow {
   color: var(--school-gold-deep);
   font-size: 12px;
@@ -483,6 +603,12 @@ onMounted(loadAdminData)
 .logout-button {
   border-color: #fda29b;
   color: #b42318;
+}
+
+.danger-button {
+  border: 1px solid #b42318;
+  background: #b42318;
+  color: white;
 }
 
 .panel {
@@ -612,6 +738,72 @@ td select,
   overflow-wrap: anywhere;
 }
 
+.analytics-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.analytics-cards div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  background: #fcfcfd;
+}
+
+.analytics-cards strong {
+  color: var(--school-navy);
+  font-size: 28px;
+}
+
+.analytics-cards span {
+  color: var(--school-muted);
+  font-size: 13px;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.analytics-grid h3 {
+  margin-bottom: 10px;
+  color: var(--school-navy);
+  font-size: 16px;
+}
+
+.path-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.path-list li,
+.recent-visits div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.path-list code,
+.recent-visits code {
+  overflow-wrap: anywhere;
+}
+
+.recent-visits div {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 3px;
+}
+
 .editor-actions {
   justify-content: flex-start;
   margin-top: 20px;
@@ -637,6 +829,11 @@ button:disabled {
   }
 
   .editor-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-cards,
+  .analytics-grid {
     grid-template-columns: 1fr;
   }
 

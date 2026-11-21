@@ -1,17 +1,43 @@
 
-const mysql = require('mysql2/promise');
 require('dotenv').config();
+const { MongoClient } = require('mongodb');
 
-const db = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'colleg_baptiste_gacuba',
+const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017';
+const databaseName = process.env.MONGODB_DB_NAME || 'colleg_baptiste_gacuba';
 
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const client = new MongoClient(uri);
+let database;
 
-module.exports = db;
+async function connectDatabase() {
+  if (!database) {
+    await client.connect();
+    database = client.db(databaseName);
+    await Promise.all([
+      database.collection('users').createIndex({ email: 1 }, { unique: true }),
+      database.collection('admissions').createIndex({ application_date: -1 }),
+      database.collection('contact_messages').createIndex({ created_at: -1 }),
+      database.collection('page_visits').createIndex({ visited_at: -1 }),
+      database.collection('page_visits').createIndex({ session_id: 1, visited_at: -1 }),
+      database.collection('page_visits').createIndex({ path: 1, visited_at: -1 }),
+      database.collection('site_content').createIndex(
+        { page: 1, language: 1, content_key: 1 },
+        { unique: true }
+      )
+    ]);
+  }
+  return database;
+}
+
+async function closeDatabase() {
+  await client.close();
+  database = undefined;
+}
+
+function getDatabase() {
+  if (!database) {
+    throw new Error('MongoDB is not connected.');
+  }
+  return database;
+}
+
+module.exports = { connectDatabase, closeDatabase, getDatabase };

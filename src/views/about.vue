@@ -158,7 +158,7 @@ const content = computed(() => {
 .about-hero {
   background:
     linear-gradient(105deg, rgba(8, 20, 36, 0.9), rgba(8, 20, 36, 0.55)),
-    url('/plygraund.jpg') center 42% / cover no-repeat;
+    url('/schol.png') center 42% / cover no-repeat;
   text-align: center;
   padding: 85px 20px;
   color: white;

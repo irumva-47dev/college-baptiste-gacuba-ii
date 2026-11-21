@@ -1,74 +1,56 @@
 const express = require('express');
-const db = require('../config/database');
+const { ObjectId } = require('mongodb');
+const { getDatabase } = require('../config/database');
 const requireAdmin = require('../middleware/requireAdmin');
 
 const router = express.Router();
 const pages = new Set([
-  'home',
-  'about',
-  'services',
-  'contact',
-  'login',
-  'register',
-  'navbar',
-  'footer',
-  'gallery',
-  'admissions'
+  'home', 'about', 'services', 'contact', 'login', 'register',
+  'navbar', 'footer', 'gallery', 'admissions'
 ]);
 
 router.use(requireAdmin);
 
+function withStringId(document) {
+  if (!document) return document;
+  return { ...document, id: document._id.toString() };
+}
+
 router.get('/overview', async (req, res) => {
   try {
-    const [[admissions], [users]] = await Promise.all([
-      db.execute(
-        `SELECT id, applicant_name, email, phone, gender, religion, course,
-          study_level, village, district, sector, province, parent_names, parent_phone, status,
-          registration_fee, payment_status, application_date
-         FROM admissions ORDER BY application_date DESC`
-      ),
-      db.execute(
-        `SELECT id, full_name, email, role, is_active, created_at
-         FROM users ORDER BY created_at DESC`
-      )
+    const database = getDatabase();
+    const [admissions, users] = await Promise.all([
+      database.collection('admissions').find().sort({ application_date: -1 }).toArray(),
+      database.collection('users')
+        .find({}, { projection: { password: 0 } })
+        .sort({ created_at: -1 })
+        .toArray()
     ]);
 
     return res.json({
-      admissions,
-      users,
+      admissions: admissions.map(withStringId),
+      users: users.map(withStringId),
       adminEmail: process.env.ADMIN_EMAIL.trim().toLowerCase()
     });
   } catch (error) {
     console.error('Admin overview error:', error);
-    return res.status(500).json({
-      message: 'Admin information could not be loaded. Check database migrations.'
-    });
+    return res.status(500).json({ message: 'Admin information could not be loaded.' });
   }
 });
 
 router.get('/contacts', async (req, res) => {
   try {
-    const [messages] = await db.execute(
-      `SELECT id, name, email, subject, message, created_at
-       FROM contact_messages ORDER BY created_at DESC LIMIT 100`
-    );
-    return res.json(messages);
+    const messages = await getDatabase().collection('contact_messages')
+      .find().sort({ created_at: -1 }).limit(100).toArray();
+    return res.json(messages.map(withStringId));
   } catch (error) {
     console.error('Admin contact messages error:', error);
-    return res.status(500).json({
-      message: 'Contact messages could not be loaded. Check database migrations.'
-    });
+    return res.status(500).json({ message: 'Contact messages could not be loaded.' });
   }
 });
 
 router.patch('/admissions/:id', async (req, res) => {
-  const id = Number(req.params.id);
   const { status, paymentStatus } = req.body;
-
-  if (!Number.isSafeInteger(id) || id < 1) {
-    return res.status(400).json({ message: 'Invalid application ID.' });
-  }
-
   if (
     (status !== undefined && !['pending', 'approved', 'rejected'].includes(status)) ||
     (paymentStatus !== undefined && !['unpaid', 'confirmed'].includes(paymentStatus)) ||
@@ -78,33 +60,19 @@ router.patch('/admissions/:id', async (req, res) => {
   }
 
   try {
-    const updates = [];
-    const values = [];
-    if (status !== undefined) {
-      updates.push('status = ?');
-      values.push(status);
+    if (!ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: 'Application not found.' });
     }
-    if (paymentStatus !== undefined) {
-      updates.push('payment_status = ?');
-      values.push(paymentStatus);
-    }
-    values.push(id);
-
-    const [result] = await db.execute(
-      `UPDATE admissions SET ${updates.join(', ')} WHERE id = ?`,
-      values
+    const updates = {};
+    if (status !== undefined) updates.status = status;
+    if (paymentStatus !== undefined) updates.payment_status = paymentStatus;
+    const result = await getDatabase().collection('admissions').updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { $set: updates }
     );
-
-    if (!result.affectedRows) {
-      const [rows] = await db.execute(
-        'SELECT id FROM admissions WHERE id = ?',
-        [id]
-      );
-      if (!rows.length) {
-        return res.status(404).json({ message: 'Application not found.' });
-      }
+    if (!result.matchedCount) {
+      return res.status(404).json({ message: 'Application not found.' });
     }
-
     return res.json({ message: 'Application updated.' });
   } catch (error) {
     console.error('Admin application update error:', error);
@@ -113,32 +81,22 @@ router.patch('/admissions/:id', async (req, res) => {
 });
 
 router.patch('/users/:id/active', async (req, res) => {
-  const id = Number(req.params.id);
   const { isActive } = req.body;
-
-  if (!Number.isSafeInteger(id) || id < 1 || typeof isActive !== 'boolean') {
+  if (!ObjectId.isValid(req.params.id) || typeof isActive !== 'boolean') {
     return res.status(400).json({ message: 'Invalid account update.' });
   }
 
   try {
-    const [users] = await db.execute(
-      'SELECT email FROM users WHERE id = ?',
-      [id]
-    );
-
-    if (!users.length) {
-      return res.status(404).json({ message: 'Account not found.' });
-    }
-
-    if (users[0].email.toLowerCase() === process.env.ADMIN_EMAIL.trim().toLowerCase()) {
+    const users = getDatabase().collection('users');
+    const user = await users.findOne({ _id: new ObjectId(req.params.id) });
+    if (!user) return res.status(404).json({ message: 'Account not found.' });
+    if (user.email.toLowerCase() === process.env.ADMIN_EMAIL.trim().toLowerCase()) {
       return res.status(403).json({ message: 'The administrator account cannot be disabled here.' });
     }
-
-    await db.execute(
-      'UPDATE users SET is_active = ? WHERE id = ?',
-      [isActive ? 1 : 0, id]
+    await users.updateOne(
+      { _id: user._id },
+      { $set: { is_active: isActive } }
     );
-
     return res.json({ message: 'Account updated.' });
   } catch (error) {
     console.error('Admin account update error:', error);
@@ -146,12 +104,40 @@ router.patch('/users/:id/active', async (req, res) => {
   }
 });
 
+router.delete('/data', async (req, res) => {
+  try {
+    const database = getDatabase();
+    const adminEmail = process.env.ADMIN_EMAIL.trim().toLowerCase();
+    const [admissions, messages, users] = await Promise.all([
+      database.collection('admissions').deleteMany({}),
+      database.collection('contact_messages').deleteMany({}),
+      database.collection('users').deleteMany({ email: { $ne: adminEmail } })
+    ]);
+    const visits = await database.collection('page_visits').deleteMany({});
+    return res.json({
+      message: 'All operational data has been deleted.',
+      deleted: {
+        admissions: admissions.deletedCount,
+        contactMessages: messages.deletedCount,
+        users: users.deletedCount,
+        pageVisits: visits.deletedCount
+      }
+    });
+  } catch (error) {
+    console.error('Admin data deletion error:', error);
+    return res.status(500).json({ message: 'Data could not be deleted.' });
+  }
+});
+
 router.get('/content', async (req, res) => {
   try {
-    const [rows] = await db.execute(
-      'SELECT page, language, content_key, content_value FROM site_content'
-    );
-    return res.json(rows);
+    const rows = await getDatabase().collection('site_content').find().toArray();
+    return res.json(rows.map(row => ({
+      page: row.page,
+      language: row.language,
+      content_key: row.content_key,
+      content_value: row.content_value
+    })));
   } catch (error) {
     console.error('Admin content load error:', error);
     return res.status(500).json({ message: 'Content could not be loaded.' });
@@ -160,14 +146,8 @@ router.get('/content', async (req, res) => {
 
 router.put('/content', async (req, res) => {
   const { page, language, content } = req.body;
-
-  if (
-    !pages.has(page) ||
-    !['en', 'rw'].includes(language) ||
-    !content ||
-    typeof content !== 'object' ||
-    Array.isArray(content)
-  ) {
+  if (!pages.has(page) || !['en', 'rw'].includes(language) ||
+      !content || typeof content !== 'object' || Array.isArray(content)) {
     return res.status(400).json({ message: 'Invalid page content.' });
   }
 
@@ -180,25 +160,19 @@ router.put('/content', async (req, res) => {
     return res.status(400).json({ message: 'Some content fields are invalid or too long.' });
   }
 
-  const connection = await db.getConnection();
   try {
-    await connection.beginTransaction();
+    const collection = getDatabase().collection('site_content');
     for (const [key, value] of entries) {
-      await connection.execute(
-        `INSERT INTO site_content (page, language, content_key, content_value)
-         VALUES (?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE content_value = VALUES(content_value)`,
-        [page, language, key, JSON.stringify(value)]
+      await collection.updateOne(
+        { page, language, content_key: key },
+        { $set: { page, language, content_key: key, content_value: JSON.stringify(value), updated_at: new Date() } },
+        { upsert: true }
       );
     }
-    await connection.commit();
     return res.json({ message: 'Website text saved.' });
   } catch (error) {
-    await connection.rollback();
     console.error('Admin content save error:', error);
     return res.status(500).json({ message: 'Website text could not be saved.' });
-  } finally {
-    connection.release();
   }
 });
 
@@ -207,12 +181,8 @@ router.delete('/content/:page/:language', async (req, res) => {
   if (!pages.has(page) || !['en', 'rw'].includes(language)) {
     return res.status(400).json({ message: 'Invalid page or language.' });
   }
-
   try {
-    await db.execute(
-      'DELETE FROM site_content WHERE page = ? AND language = ?',
-      [page, language]
-    );
+    await getDatabase().collection('site_content').deleteMany({ page, language });
     return res.json({ message: 'Default website text restored.' });
   } catch (error) {
     console.error('Admin content reset error:', error);
