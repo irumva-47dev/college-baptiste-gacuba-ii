@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # mugisha
 
 This template should help get you started developing with Vue 3 in Vite.
@@ -47,3 +48,7 @@ npm run dev
 ```sh
 npm run build
 ```
+=======
+# college-baptiste-gacuba-ii
+College Baptiste Gacuba II School Website
+>>>>>>> b954068d264ccda1adc16ad08a50426dc066aeb5
