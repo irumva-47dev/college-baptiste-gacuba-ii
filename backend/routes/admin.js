@@ -114,6 +114,13 @@ router.delete('/data', async (req, res) => {
       database.collection('users').deleteMany({ email: { $ne: adminEmail } })
     ]);
     const visits = await database.collection('page_visits').deleteMany({});
+    await Promise.all([
+      database.collection('announcements').deleteMany({}),
+      database.collection('school_calendar').deleteMany({}),
+      database.collection('teachers').deleteMany({}),
+      database.collection('parent_information').deleteMany({}),
+      database.collection('results').deleteMany({})
+    ]);
     return res.json({
       message: 'All operational data has been deleted.',
       deleted: {

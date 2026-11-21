@@ -562,6 +562,55 @@ onMounted(loadAdminData)
       </div>
     </section>
 
+    <section v-if="tab === 'school' && !loading" class="panel">
+      <h2>Amatangazo, ingengabihe, abarimu, n’amakuru y’ababyeyi</h2>
+      <div class="content-controls">
+        <label>
+          Ubwoko bw’amakuru
+          <select v-model="schoolType">
+            <option value="announcements">Amatangazo</option>
+            <option value="calendar">Ingengabihe y’amasomo</option>
+            <option value="teachers">Abarimu</option>
+            <option value="parents">Amakuru y’ababyeyi</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="school-editor">
+        <label>Umutwe
+          <input v-model="schoolDraft.title" maxlength="200" />
+        </label>
+        <label>Ibisobanuro
+          <textarea v-model="schoolDraft.description" rows="3"></textarea>
+        </label>
+        <label>Itariki
+          <input v-model="schoolDraft.date" type="date" />
+        </label>
+        <label>Isomo cyangwa amakuru y’inyongera
+          <input v-model="schoolDraft.subject" maxlength="200" />
+        </label>
+        <button class="primary-button" type="button" @click="saveSchoolItem">Bika amakuru</button>
+      </div>
+
+      <div v-if="schoolItems.length" class="school-items">
+        <article v-for="item in schoolItems" :key="item.id">
+          <div><strong>{{ item.title }}</strong><small v-if="item.date">{{ item.date }}</small></div>
+          <button class="secondary-button" type="button" @click="deleteSchoolItem(item)">Siba</button>
+        </article>
+      </div>
+
+      <hr />
+      <h3>Kuzana amanota ukoresheje CSV</h3>
+      <p class="panel-description">
+        CSV itangirana na headers: student_email,student_name,term,subject,score,grade
+      </p>
+      <textarea v-model="resultsCsv" class="csv-editor" rows="5"
+        placeholder="student_email,student_name,term,subject,score,grade&#10;student@example.com,Name,Term 1,Mathematics,85,A"></textarea>
+      <button class="primary-button import-button" type="button" @click="importResults">
+        Ingeramo amanota
+      </button>
+    </section>
+
     <section v-if="tab === 'content' && !loading" class="panel">
       <h2>Guhindura amagambo agaragara ku rubuga</h2>
       <p class="panel-description">
@@ -882,6 +931,58 @@ td select,
   gap: 3px;
 }
 
+.school-editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.school-editor label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--school-navy);
+  font-weight: 600;
+}
+
+.school-editor input,
+.school-editor textarea,
+.csv-editor {
+  width: 100%;
+  padding: 9px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.school-items {
+  margin: 12px 0 20px;
+}
+
+.school-items article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.school-items small {
+  display: block;
+  color: var(--school-muted);
+}
+
+.csv-editor {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.import-button {
+  margin-top: 10px;
+}
+
 .editor-actions {
   justify-content: flex-start;
   margin-top: 20px;
@@ -911,7 +1012,8 @@ button:disabled {
   }
 
   .analytics-cards,
-  .analytics-grid {
+  .analytics-grid,
+  .school-editor {
     grid-template-columns: 1fr;
   }
 
