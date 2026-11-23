@@ -1,5 +1,6 @@
 const express = require('express');
 const { getDatabase } = require('../config/database');
+const requireAuth = require('../middleware/requireAuth');
 
 const router = express.Router();
 const courses = ['O-Level', 'Software Development', 'Accounting'];
@@ -10,7 +11,7 @@ const studyLevels = {
   Accounting: ['S4', 'S5', 'S6']
 };
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const applicantName = typeof body.applicantName === 'string'
     ? body.applicantName.trim()

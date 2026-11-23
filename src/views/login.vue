@@ -94,12 +94,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useLanguageStore } from '../stores/language'
 import { useSiteContentStore } from '../stores/siteContent'
 import { apiUrl } from '../services/api'
 
 const router = useRouter()
+const route = useRoute()
 const languageStore = useLanguageStore()
 const siteContent = useSiteContentStore()
 
@@ -196,9 +197,15 @@ async function handleLogin() {
 
     password.value = ''
 
-    // Send the administrator to the dashboard and other users to the school overview.
+    const redirect = route.query.redirect
+    const destination = typeof redirect === 'string' &&
+      redirect.startsWith('/') &&
+      !redirect.startsWith('//')
+      ? redirect
+      : '/about'
+
     setTimeout(() => {
-      router.push(data.user.role === 'admin' ? '/admin' : '/about')
+      router.push(data.user.role === 'admin' ? '/admin' : destination)
     }, 1000)
 
   } catch (error) {

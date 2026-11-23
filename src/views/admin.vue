@@ -1,11 +1,13 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useLanguageStore } from '../stores/language'
 import { siteDefaults } from '../content/siteDefaults'
 import { useSiteContentStore } from '../stores/siteContent'
 import { apiUrl } from '../services/api'
 
 const router = useRouter()
+const languageStore = useLanguageStore()
 const siteContent = useSiteContentStore()
 const tab = ref('admissions')
 const loading = ref(false)
@@ -30,20 +32,132 @@ const analytics = ref({
 })
 const adminEmail = ref('')
 const selectedPage = ref('home')
-const selectedLanguage = ref('rw')
+const selectedLanguage = ref(languageStore.language)
 const draft = reactive({})
 
-const pageNames = {
-  home: 'Ahabanza',
-  about: 'Ibitwerekeye ishuri',
-  services: 'Amasomo',
-  contact: 'Twandikire',
-  login: 'Kwinjira',
-  register: 'Kwiyandikisha',
-  navbar: 'Menu',
-  footer: 'Umusozo w’urubuga',
-  gallery: 'Amafoto',
-  admissions: 'Gusaba kwiga'
+const labels = {
+  'Ubuyobozi bw’urubuga': 'Website Administration',
+  'Birimo gusibwa...': 'Deleting...',
+  'Siba amakuru yose': 'Delete all data',
+  'Sohoka': 'Log out',
+  'Ibice by’ubuyobozi': 'Administration sections',
+  'Abasaba kwiga': 'Applicants',
+  'Konti z’abakoresha': 'User accounts',
+  'Ubutumwa': 'Messages',
+  'Amagambo y’urubuga': 'Website content',
+  'Abasura urubuga': 'Website visits',
+  'Amakuru y’ishuri': 'School information',
+  'Kuvugurura': 'Refresh',
+  'Amakuru arimo gufunguka...': 'Loading information...',
+  'Ubusabe bwo kwiga': 'Admission applications',
+  'Nta busabe buraboneka.': 'No applications available.',
+  'Umunyeshuri': 'Student',
+  'Ishami': 'Program',
+  'Aho atuye': 'Address',
+  'Umubyeyi': 'Parent',
+  'Papa:': 'Father:',
+  'Mama:': 'Mother:',
+  'Kwiyandikisha': 'Registration',
+  'Icyemezo': 'Status',
+  'Umukino:': 'Sport:',
+  'Ubwishingizi:': 'Insurance:',
+  'Imiterere y’ubwishyu': 'Payment status',
+  'Ntarishyura': 'Unpaid',
+  'Yemejwe n’ishuri': 'Confirmed by school',
+  'Imiterere y’ubusabe': 'Application status',
+  'Birategereje': 'Pending',
+  'Yemewe': 'Approved',
+  'Yanzwe': 'Rejected',
+  'Ubutumwa bwo kuri Contact': 'Contact messages',
+  'Nta butumwa buraboneka.': 'No messages available.',
+  'Amazina': 'Name',
+  'Imeyili': 'Email',
+  'Umutwe': 'Title',
+  'Umutwe w’ubutumwa': 'Subject',
+  'Ubutumwa bwanditse': 'Message',
+  'Itariki': 'Date',
+  'Umubare w’ibihe urubuga rusuwe': 'Total visits',
+  'Uyu munsi': 'Today',
+  'Iminsi 7 ishize': 'Last 7 days',
+  'Sessions zitandukanye': 'Unique sessions',
+  'Pages zakunze gusurwa': 'Most visited pages',
+  'Nta sura ryanditswe.': 'No visits recorded.',
+  'Surwa ziheruka': 'Recent visits',
+  'Nta konti ziraboneka.': 'No accounts available.',
+  'Uruhare': 'Role',
+  'Imiterere': 'Status',
+  'Igikorwa': 'Action',
+  'Ifunguye': 'Active',
+  'Yahagaritswe': 'Disabled',
+  'Hagarika': 'Disable',
+  'Fungura': 'Enable',
+  'Admin wenyine': 'Administrator',
+  'Amatangazo, ingengabihe, abarimu, n’amakuru y’ababyeyi': 'Announcements, calendar, teachers, and parent information',
+  'Ubwoko bw’amakuru': 'Information type',
+  'Amatangazo': 'Announcements',
+  'Ingengabihe y’amasomo': 'School calendar',
+  'Abarimu': 'Teachers',
+  'Amakuru y’ababyeyi': 'Parent information',
+  'Ibisobanuro': 'Description',
+  'Isomo cyangwa amakuru y’inyongera': 'Subject or additional information',
+  'Bika amakuru': 'Save information',
+  'Siba': 'Delete',
+  'Kuzana amanota ukoresheje CSV': 'Import results using CSV',
+  'Ingeramo amanota': 'Import results',
+  'Guhindura amagambo agaragara ku rubuga': 'Edit website text',
+  'Hitamo page n’ururimi. Amagambo ahinduwe agaragara ku rubuga nyuma yo kubika.': 'Choose a page and language. Changes appear on the website after saving.',
+  'Page': 'Page',
+  'Ururimi': 'Language',
+  'Ikinyarwanda': 'Kinyarwanda',
+  'Birimo kubikwa...': 'Saving...',
+  'Bika impinduka': 'Save changes',
+  'Subiza amagambo asanzwe': 'Restore default text',
+  'Server yasubije ibisubizo bitari JSON.': 'The server returned a non-JSON response.',
+  'Izina ry’itangazo cyangwa umutwe urakenewe.': 'An announcement name or title is required.',
+  'CSV y’amanota ifite header n’imirongo itazuyaza.': 'The results CSV must include headers and at least one data row.',
+  'Amakuru y’ubusabe yavuguruwe.': 'Application updated.',
+  'Amakuru y’ishuri yabitswe.': 'School information saved.',
+  'Urifuza gusiba iki kintu?': 'Are you sure you want to delete this item?',
+  'Amakuru yasibwe.': 'Information deleted.',
+  'Urifuza kongera gufungura iyi konti?': 'Do you want to enable this account?',
+  'Urifuza guhagarika iyi konti?': 'Do you want to disable this account?',
+  'Konti yavuguruwe.': 'Account updated.',
+  'Amagambo yabitswe ku rubuga.': 'Website text saved.',
+  'Subiza amagambo y’uru rupapuro ku ya mbere?': 'Restore the default text for this page?',
+  'Amagambo asanzwe yagaruwe.': 'Default text restored.',
+  'Ibi bizasiba ubusabe bwose, ubutumwa bwose, n’konti z’abakoresha zose zitari admin. Ntibishobora gusubizwa. Komeza?': 'This will permanently delete all applications, messages, and non-admin accounts. Continue?',
+  'Andika "SIBA BYOSE" kugira ngo wemeze gusiba amakuru yose.': 'Type "DELETE ALL" to confirm deleting all data.',
+  'SIBA BYOSE': 'DELETE ALL',
+  'Amakuru yasibwe: {admissions} ubusabe, {contacts} ubutumwa, {users} konti, na {visits} sura.': 'Deleted: {admissions} applications, {contacts} messages, {users} accounts, and {visits} visits.'
+}
+const pageNames = computed(() => languageStore.language === 'en'
+  ? {
+      home: 'Home',
+      about: 'About the school',
+      services: 'Academics',
+      contact: 'Contact',
+      login: 'Login',
+      register: 'Register',
+      navbar: 'Navigation',
+      footer: 'Footer',
+      gallery: 'Gallery',
+      admissions: 'Admissions'
+    }
+  : {
+      home: 'Ahabanza',
+      about: 'Ibitwerekeye ishuri',
+      services: 'Amasomo',
+      contact: 'Twandikire',
+      login: 'Kwinjira',
+      register: 'Kwiyandikisha',
+      navbar: 'Menu',
+      footer: 'Umusozo w’urubuga',
+      gallery: 'Amafoto',
+      admissions: 'Gusaba kwiga'
+    })
+
+function tr(text) {
+  return languageStore.language === 'en' ? labels[text] || text : text
 }
 
 const contentFields = computed(() => Object.entries(draft))
@@ -148,7 +262,7 @@ async function updateAdmission(admission, updates) {
       body: JSON.stringify(updates)
     })
     Object.assign(admission, updates)
-    successMessage.value = 'Amakuru y’ubusabe yavuguruwe.'
+    successMessage.value = tr('Amakuru y’ubusabe yavuguruwe.')
   } catch (error) {
     console.error('Admission update error:', error)
     errorMessage.value = error.message
@@ -168,7 +282,7 @@ watch(schoolType, loadSchoolItems)
 
 async function saveSchoolItem() {
   if (!schoolDraft.title.trim()) {
-    errorMessage.value = 'Izina ry’itangazo cyangwa umutwe urakenewe.'
+    errorMessage.value = tr('Izina ry’itangazo cyangwa umutwe urakenewe.')
     return
   }
   try {
@@ -178,18 +292,18 @@ async function saveSchoolItem() {
     })
     Object.keys(schoolDraft).forEach(key => { schoolDraft[key] = '' })
     await loadSchoolItems()
-    successMessage.value = 'Amakuru y’ishuri yabitswe.'
+    successMessage.value = tr('Amakuru y’ishuri yabitswe.')
   } catch (error) {
     errorMessage.value = error.message
   }
 }
 
 async function deleteSchoolItem(item) {
-  if (!window.confirm('Urifuza gusiba iki kintu?')) return
+  if (!window.confirm(tr('Urifuza gusiba iki kintu?'))) return
   try {
     await request(`/api/school-data/admin/${schoolType.value}/${item.id}`, { method: 'DELETE' })
     await loadSchoolItems()
-    successMessage.value = 'Amakuru yasibwe.'
+    successMessage.value = tr('Amakuru yasibwe.')
   } catch (error) {
     errorMessage.value = error.message
   }
@@ -210,7 +324,7 @@ function parseResultsCsv(csv) {
 async function importResults() {
   const rows = parseResultsCsv(resultsCsv.value)
   if (!rows.length) {
-    errorMessage.value = 'CSV y’amanota ifite header n’imirongo itazuyaza.'
+    errorMessage.value = tr('CSV y’amanota ifite header n’imirongo itazuyaza.')
     return
   }
   try {
@@ -219,7 +333,9 @@ async function importResults() {
       body: JSON.stringify({ rows })
     })
     resultsCsv.value = ''
-    successMessage.value = result.message
+    successMessage.value = languageStore.language === 'en'
+      ? `${result.imported} result(s) imported.`
+      : `Amanota ${result.imported} yashyizwemo.`
   } catch (error) {
     errorMessage.value = error.message
   }
@@ -228,8 +344,8 @@ async function importResults() {
 async function setUserActive(user) {
   const nextStatus = !Boolean(user.is_active)
   if (!window.confirm(nextStatus
-    ? 'Urifuza kongera gufungura iyi konti?'
-    : 'Urifuza guhagarika iyi konti?')) {
+    ? tr('Urifuza kongera gufungura iyi konti?')
+    : tr('Urifuza guhagarika iyi konti?'))) {
     return
   }
 
@@ -241,7 +357,7 @@ async function setUserActive(user) {
       body: JSON.stringify({ isActive: nextStatus })
     })
     user.is_active = nextStatus ? 1 : 0
-    successMessage.value = 'Konti yavuguruwe.'
+    successMessage.value = tr('Konti yavuguruwe.')
   } catch (error) {
     console.error('Account update error:', error)
     errorMessage.value = error.message
@@ -272,7 +388,7 @@ async function saveContent() {
     })
     siteContent.overrides[selectedPage.value] ||= {}
     siteContent.overrides[selectedPage.value][selectedLanguage.value] = content
-    successMessage.value = 'Amagambo yabitswe ku rubuga.'
+    successMessage.value = tr('Amagambo yabitswe ku rubuga.')
   } catch (error) {
     console.error('Website content save error:', error)
     errorMessage.value = error.message
@@ -282,7 +398,7 @@ async function saveContent() {
 }
 
 async function restoreDefaults() {
-  if (!window.confirm('Subiza amagambo y’uru rupapuro ku ya mbere?')) {
+  if (!window.confirm(tr('Subiza amagambo y’uru rupapuro ku ya mbere?'))) {
     return
   }
 
@@ -297,7 +413,7 @@ async function restoreDefaults() {
       delete siteContent.overrides[selectedPage.value][selectedLanguage.value]
     }
     loadDraft()
-    successMessage.value = 'Amagambo asanzwe yagaruwe.'
+    successMessage.value = tr('Amagambo asanzwe yagaruwe.')
   } catch (error) {
     console.error('Website content reset error:', error)
     errorMessage.value = error.message
@@ -306,15 +422,15 @@ async function restoreDefaults() {
 
 async function deleteAllData() {
   if (!window.confirm(
-    'Ibi bizasiba ubusabe bwose, ubutumwa bwose, n’konti z’abakoresha zose zitari admin. Ntibishobora gusubizwa. Komeza?'
+    tr('Ibi bizasiba ubusabe bwose, ubutumwa bwose, n’konti z’abakoresha zose zitari admin. Ntibishobora gusubizwa. Komeza?')
   )) {
     return
   }
 
   const confirmation = window.prompt(
-    'Andika "SIBA BYOSE" kugira ngo wemeze gusiba amakuru yose.'
+    tr('Andika "SIBA BYOSE" kugira ngo wemeze gusiba amakuru yose.')
   )
-  if (confirmation !== 'SIBA BYOSE') {
+  if (confirmation !== tr('SIBA BYOSE')) {
     return
   }
 
@@ -337,7 +453,11 @@ async function deleteAllData() {
       byPath: [],
       recent: []
     }
-    successMessage.value = `Amakuru yasibwe: ${result.deleted.admissions} ubusabe, ${result.deleted.contactMessages} ubutumwa, ${result.deleted.users} konti, na ${result.deleted.pageVisits || 0} sura.`
+    successMessage.value = tr('Amakuru yasibwe: {admissions} ubusabe, {contacts} ubutumwa, {users} konti, na {visits} sura.')
+      .replace('{admissions}', result.deleted.admissions)
+      .replace('{contacts}', result.deleted.contactMessages)
+      .replace('{users}', result.deleted.users)
+      .replace('{visits}', result.deleted.pageVisits || 0)
   } catch (error) {
     console.error('Admin data deletion error:', error)
     errorMessage.value = error.message
@@ -360,7 +480,7 @@ onMounted(loadAdminData)
     <header class="admin-header">
       <div>
         <p class="eyebrow">COLLEGE BAPTISTE GACUBA II</p>
-        <h1>Ubuyobozi bw’urubuga</h1>
+        <h1>{{ tr('Ubuyobozi bw’urubuga') }}</h1>
       </div>
       <div class="header-actions">
         <button
@@ -369,51 +489,51 @@ onMounted(loadAdminData)
           :disabled="deletingData"
           @click="deleteAllData"
         >
-          {{ deletingData ? 'Birimo gusibwa...' : 'Siba amakuru yose' }}
+          {{ deletingData ? tr('Birimo gusibwa...') : tr('Siba amakuru yose') }}
         </button>
-        <button class="logout-button" type="button" @click="logout">Sohoka</button>
+        <button class="logout-button" type="button" @click="logout">{{ tr('Sohoka') }}</button>
       </div>
     </header>
 
-    <nav class="tabs" aria-label="Ibice by’ubuyobozi">
+    <nav class="tabs" :aria-label="tr('Ibice by’ubuyobozi')">
       <button :class="{ active: tab === 'admissions' }" @click="tab = 'admissions'">
-        Abasaba kwiga
+        {{ tr('Abasaba kwiga') }}
       </button>
       <button :class="{ active: tab === 'users' }" @click="tab = 'users'">
-        Konti z’abakoresha
+        {{ tr('Konti z’abakoresha') }}
       </button>
       <button :class="{ active: tab === 'contacts' }" @click="tab = 'contacts'">
-        Ubutumwa
+        {{ tr('Ubutumwa') }}
       </button>
       <button :class="{ active: tab === 'content' }" @click="tab = 'content'">
-        Amagambo y’urubuga
+        {{ tr('Amagambo y’urubuga') }}
       </button>
       <button :class="{ active: tab === 'analytics' }" @click="tab = 'analytics'">
-        Abasura urubuga
+        {{ tr('Abasura urubuga') }}
       </button>
       <button :class="{ active: tab === 'school' }" @click="tab = 'school'; loadSchoolItems()">
-        Amakuru y’ishuri
+        {{ tr('Amakuru y’ishuri') }}
       </button>
-      <button type="button" @click="loadAdminData">Kuvugurura</button>
+      <button type="button" @click="loadAdminData">{{ tr('Kuvugurura') }}</button>
     </nav>
 
     <p v-if="errorMessage" class="notice error" role="alert">{{ errorMessage }}</p>
     <p v-if="successMessage" class="notice success" role="status">{{ successMessage }}</p>
-    <p v-if="loading" class="notice">Amakuru arimo gufunguka...</p>
+    <p v-if="loading" class="notice">{{ tr('Amakuru arimo gufunguka...') }}</p>
 
     <section v-if="tab === 'admissions' && !loading" class="panel">
-      <h2>Ubusabe bwo kwiga</h2>
-      <div v-if="!admissions.length" class="empty-state">Nta busabe buraboneka.</div>
+      <h2>{{ tr('Ubusabe bwo kwiga') }}</h2>
+      <div v-if="!admissions.length" class="empty-state">{{ tr('Nta busabe buraboneka.') }}</div>
       <div v-else class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Umunyeshuri</th>
-              <th>Ishami</th>
-              <th>Aho atuye</th>
-              <th>Umubyeyi</th>
-              <th>Kwiyandikisha</th>
-              <th>Icyemezo</th>
+              <th>{{ tr('Umunyeshuri') }}</th>
+              <th>{{ tr('Ishami') }}</th>
+              <th>{{ tr('Aho atuye') }}</th>
+              <th>{{ tr('Umubyeyi') }}</th>
+              <th>{{ tr('Kwiyandikisha') }}</th>
+              <th>{{ tr('Icyemezo') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -425,36 +545,36 @@ onMounted(loadAdminData)
               </td>
               <td>
                 {{ item.course }} · {{ item.study_level }}
-                <small>Umukino: {{ item.sport || '-' }}</small>
+                <small>{{ tr('Umukino:') }} {{ item.sport || '-' }}</small>
               </td>
               <td>{{ [item.village, item.sector, item.district, item.province].filter(Boolean).join(', ') }}</td>
               <td>
-                Papa: {{ item.father_names || item.parent_names || '-' }}
+                {{ tr('Papa:') }} {{ item.father_names || item.parent_names || '-' }}
                 <small>{{ item.father_phone || item.parent_phone || '-' }}</small>
-                Mama: {{ item.mother_names || '-' }}
+                {{ tr('Mama:') }} {{ item.mother_names || '-' }}
                 <small>{{ item.mother_phone || '-' }}</small>
-                <small>Ubwishingizi: {{ item.insurance || '-' }}</small>
+                <small>{{ tr('Ubwishingizi:') }} {{ item.insurance || '-' }}</small>
               </td>
               <td>
                 <strong>{{ Number(item.registration_fee).toLocaleString() }} Frw</strong>
                 <select
                   :value="item.payment_status"
-                  aria-label="Imiterere y’ubwishyu"
+                  :aria-label="tr('Imiterere y’ubwishyu')"
                   @change="updateAdmission(item, { paymentStatus: $event.target.value })"
                 >
-                  <option value="unpaid">Ntarishyura</option>
-                  <option value="confirmed">Yemejwe n’ishuri</option>
+                  <option value="unpaid">{{ tr('Ntarishyura') }}</option>
+                  <option value="confirmed">{{ tr('Yemejwe n’ishuri') }}</option>
                 </select>
               </td>
               <td>
                 <select
                   :value="item.status"
-                  aria-label="Imiterere y’ubusabe"
+                  :aria-label="tr('Imiterere y’ubusabe')"
                   @change="updateAdmission(item, { status: $event.target.value })"
                 >
-                  <option value="pending">Birategereje</option>
-                  <option value="approved">Yemewe</option>
-                  <option value="rejected">Yanzwe</option>
+                  <option value="pending">{{ tr('Birategereje') }}</option>
+                  <option value="approved">{{ tr('Yemewe') }}</option>
+                  <option value="rejected">{{ tr('Yanzwe') }}</option>
                 </select>
                 <small>{{ new Date(item.application_date).toLocaleDateString() }}</small>
               </td>
@@ -465,17 +585,17 @@ onMounted(loadAdminData)
     </section>
 
     <section v-if="tab === 'contacts' && !loading" class="panel">
-      <h2>Ubutumwa bwo kuri Contact</h2>
-      <div v-if="!contactMessages.length" class="empty-state">Nta butumwa buraboneka.</div>
+      <h2>{{ tr('Ubutumwa bwo kuri Contact') }}</h2>
+      <div v-if="!contactMessages.length" class="empty-state">{{ tr('Nta butumwa buraboneka.') }}</div>
       <div v-else class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Amazina</th>
-              <th>Imeyili</th>
-              <th>Umutwe</th>
-              <th>Ubutumwa</th>
-              <th>Itariki</th>
+              <th>{{ tr('Amazina') }}</th>
+              <th>{{ tr('Imeyili') }}</th>
+              <th>{{ tr('Umutwe w’ubutumwa') }}</th>
+              <th>{{ tr('Ubutumwa bwanditse') }}</th>
+              <th>{{ tr('Itariki') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -492,18 +612,18 @@ onMounted(loadAdminData)
     </section>
 
     <section v-if="tab === 'analytics' && !loading" class="panel">
-      <h2>Abasuye urubuga</h2>
+      <h2>{{ tr('Abasuye urubuga') }}</h2>
       <div class="analytics-cards">
-        <div><strong>{{ analytics.total }}</strong><span>Umubare w’ibihe urubuga rusuwe</span></div>
-        <div><strong>{{ analytics.today }}</strong><span>Uyu munsi</span></div>
-        <div><strong>{{ analytics.week }}</strong><span>Iminsi 7 ishize</span></div>
-        <div><strong>{{ analytics.uniqueSessions }}</strong><span>Sessions zitandukanye</span></div>
+        <div><strong>{{ analytics.total }}</strong><span>{{ tr('Umubare w’ibihe urubuga rusuwe') }}</span></div>
+        <div><strong>{{ analytics.today }}</strong><span>{{ tr('Uyu munsi') }}</span></div>
+        <div><strong>{{ analytics.week }}</strong><span>{{ tr('Iminsi 7 ishize') }}</span></div>
+        <div><strong>{{ analytics.uniqueSessions }}</strong><span>{{ tr('Sessions zitandukanye') }}</span></div>
       </div>
 
       <div class="analytics-grid">
         <div>
-          <h3>Pages zakunze gusurwa</h3>
-          <div v-if="!analytics.byPath.length" class="empty-state">Nta sura ryanditswe.</div>
+          <h3>{{ tr('Pages zakunze gusurwa') }}</h3>
+          <div v-if="!analytics.byPath.length" class="empty-state">{{ tr('Nta sura ryanditswe.') }}</div>
           <ol v-else class="path-list">
             <li v-for="item in analytics.byPath" :key="item.path">
               <code>{{ item.path }}</code>
@@ -513,8 +633,8 @@ onMounted(loadAdminData)
         </div>
 
         <div>
-          <h3>Surwa ziheruka</h3>
-          <div v-if="!analytics.recent.length" class="empty-state">Nta sura ryanditswe.</div>
+          <h3>{{ tr('Surwa ziheruka') }}</h3>
+          <div v-if="!analytics.recent.length" class="empty-state">{{ tr('Nta sura ryanditswe.') }}</div>
           <div v-else class="recent-visits">
             <div v-for="item in analytics.recent" :key="item.id">
               <code>{{ item.path }}</code>
@@ -526,25 +646,25 @@ onMounted(loadAdminData)
     </section>
 
     <section v-if="tab === 'users' && !loading" class="panel">
-      <h2>Konti z’abakoresha</h2>
-      <div v-if="!users.length" class="empty-state">Nta konti ziraboneka.</div>
+      <h2>{{ tr('Konti z’abakoresha') }}</h2>
+      <div v-if="!users.length" class="empty-state">{{ tr('Nta konti ziraboneka.') }}</div>
       <div v-else class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Amazina</th>
-              <th>Imeyili</th>
-              <th>Uruhare</th>
-              <th>Imiterere</th>
-              <th>Igikorwa</th>
+              <th>{{ tr('Amazina') }}</th>
+              <th>{{ tr('Imeyili') }}</th>
+              <th>{{ tr('Uruhare') }}</th>
+              <th>{{ tr('Imiterere') }}</th>
+              <th>{{ tr('Igikorwa') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="user in users" :key="user.id">
               <td>{{ user.full_name }}</td>
               <td>{{ user.email }}</td>
-              <td>{{ user.email.toLowerCase() === adminEmail ? 'Admin' : user.role }}</td>
-              <td>{{ user.is_active ? 'Ifunguye' : 'Yahagaritswe' }}</td>
+              <td>{{ user.email.toLowerCase() === adminEmail ? 'Admin' : user.role === 'student' ? tr('Umunyeshuri') : user.role }}</td>
+              <td>{{ user.is_active ? tr('Ifunguye') : tr('Yahagaritswe') }}</td>
               <td>
                 <button
                   v-if="user.email.toLowerCase() !== adminEmail"
@@ -552,9 +672,9 @@ onMounted(loadAdminData)
                   type="button"
                   @click="setUserActive(user)"
                 >
-                  {{ user.is_active ? 'Hagarika' : 'Fungura' }}
+                  {{ user.is_active ? tr('Hagarika') : tr('Fungura') }}
                 </button>
-                <span v-else>Admin wenyine</span>
+                <span v-else>{{ tr('Admin wenyine') }}</span>
               </td>
             </tr>
           </tbody>
@@ -563,58 +683,58 @@ onMounted(loadAdminData)
     </section>
 
     <section v-if="tab === 'school' && !loading" class="panel">
-      <h2>Amatangazo, ingengabihe, abarimu, n’amakuru y’ababyeyi</h2>
+      <h2>{{ tr('Amatangazo, ingengabihe, abarimu, n’amakuru y’ababyeyi') }}</h2>
       <div class="content-controls">
         <label>
-          Ubwoko bw’amakuru
+          {{ tr('Ubwoko bw’amakuru') }}
           <select v-model="schoolType">
-            <option value="announcements">Amatangazo</option>
-            <option value="calendar">Ingengabihe y’amasomo</option>
-            <option value="teachers">Abarimu</option>
-            <option value="parents">Amakuru y’ababyeyi</option>
+            <option value="announcements">{{ tr('Amatangazo') }}</option>
+            <option value="calendar">{{ tr('Ingengabihe y’amasomo') }}</option>
+            <option value="teachers">{{ tr('Abarimu') }}</option>
+            <option value="parents">{{ tr('Amakuru y’ababyeyi') }}</option>
           </select>
         </label>
       </div>
 
       <div class="school-editor">
-        <label>Umutwe
+        <label>{{ tr('Umutwe') }}
           <input v-model="schoolDraft.title" maxlength="200" />
         </label>
-        <label>Ibisobanuro
+        <label>{{ tr('Ibisobanuro') }}
           <textarea v-model="schoolDraft.description" rows="3"></textarea>
         </label>
-        <label>Itariki
+        <label>{{ tr('Itariki') }}
           <input v-model="schoolDraft.date" type="date" />
         </label>
-        <label>Isomo cyangwa amakuru y’inyongera
+        <label>{{ tr('Isomo cyangwa amakuru y’inyongera') }}
           <input v-model="schoolDraft.subject" maxlength="200" />
         </label>
-        <button class="primary-button" type="button" @click="saveSchoolItem">Bika amakuru</button>
+        <button class="primary-button" type="button" @click="saveSchoolItem">{{ tr('Bika amakuru') }}</button>
       </div>
 
       <div v-if="schoolItems.length" class="school-items">
         <article v-for="item in schoolItems" :key="item.id">
           <div><strong>{{ item.title }}</strong><small v-if="item.date">{{ item.date }}</small></div>
-          <button class="secondary-button" type="button" @click="deleteSchoolItem(item)">Siba</button>
+          <button class="secondary-button" type="button" @click="deleteSchoolItem(item)">{{ tr('Siba') }}</button>
         </article>
       </div>
 
       <hr />
-      <h3>Kuzana amanota ukoresheje CSV</h3>
+      <h3>{{ tr('Kuzana amanota ukoresheje CSV') }}</h3>
       <p class="panel-description">
         CSV itangirana na headers: student_email,student_name,term,subject,score,grade
       </p>
       <textarea v-model="resultsCsv" class="csv-editor" rows="5"
         placeholder="student_email,student_name,term,subject,score,grade&#10;student@example.com,Name,Term 1,Mathematics,85,A"></textarea>
       <button class="primary-button import-button" type="button" @click="importResults">
-        Ingeramo amanota
+        {{ tr('Ingeramo amanota') }}
       </button>
     </section>
 
     <section v-if="tab === 'content' && !loading" class="panel">
-      <h2>Guhindura amagambo agaragara ku rubuga</h2>
+      <h2>{{ tr('Guhindura amagambo agaragara ku rubuga') }}</h2>
       <p class="panel-description">
-        Hitamo page n’ururimi. Amagambo ahinduwe agaragara ku rubuga nyuma yo kubika.
+        {{ tr('Hitamo page n’ururimi. Amagambo ahinduwe agaragara ku rubuga nyuma yo kubika.') }}
       </p>
       <div class="content-controls">
         <label>
@@ -626,9 +746,9 @@ onMounted(loadAdminData)
           </select>
         </label>
         <label>
-          Ururimi
+          {{ tr('Ururimi') }}
           <select v-model="selectedLanguage">
-            <option value="rw">Ikinyarwanda</option>
+            <option value="rw">{{ tr('Ikinyarwanda') }}</option>
             <option value="en">English</option>
           </select>
         </label>
@@ -643,10 +763,10 @@ onMounted(loadAdminData)
 
       <div class="editor-actions">
         <button class="primary-button" type="button" :disabled="saving" @click="saveContent">
-          {{ saving ? 'Birimo kubikwa...' : 'Bika impinduka' }}
+          {{ saving ? tr('Birimo kubikwa...') : tr('Bika impinduka') }}
         </button>
         <button class="secondary-button" type="button" @click="restoreDefaults">
-          Subiza amagambo asanzwe
+          {{ tr('Subiza amagambo asanzwe') }}
         </button>
       </div>
     </section>

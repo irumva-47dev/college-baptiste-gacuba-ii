@@ -1,10 +1,38 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useLanguageStore } from '../stores/language'
 import { apiUrl } from '../services/api'
 
+const languageStore = useLanguageStore()
 const results = ref([])
 const loading = ref(false)
 const errorMessage = ref('')
+
+const translations = {
+  en: {
+    title: 'Student Portal',
+    results: 'Your Results',
+    loading: 'Loading information...',
+    loadError: 'Results could not be loaded. Please try again.',
+    empty: 'No results are available.',
+    term: 'Term',
+    subject: 'Subject',
+    score: 'Score',
+    grade: 'Grade'
+  },
+  rw: {
+    title: 'Urubuga rw’Umunyeshuri',
+    results: 'Amanota yawe',
+    loading: 'Amakuru arimo gufunguka...',
+    loadError: 'Amanota ntiyashoboye gufunguka. Ongera ugerageze.',
+    empty: 'Nta manota araboneka.',
+    term: 'Igihembwe',
+    subject: 'Isomo',
+    score: 'Amanota',
+    grade: 'Ikiciro'
+  }
+}
+const content = computed(() => translations[languageStore.language] || translations.en)
 
 function getToken() {
   return localStorage.getItem('token')
@@ -17,11 +45,11 @@ async function loadResults() {
     const response = await fetch(apiUrl('/api/school-data/results/me'), {
       headers: { Authorization: `Bearer ${getToken()}` }
     })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Results could not be loaded.')
-    results.value = data
+    if (!response.ok) throw new Error('Results request failed.')
+    results.value = await response.json()
   } catch (error) {
-    errorMessage.value = error.message
+    console.error('Student results load error:', error)
+    errorMessage.value = content.value.loadError
   } finally {
     loading.value = false
   }
@@ -34,19 +62,26 @@ onMounted(loadResults)
   <main class="portal-page">
     <header>
       <p class="eyebrow">COLLEGE BAPTISTE GACUBA II</p>
-      <h1>Student Portal</h1>
+      <h1>{{ content.title }}</h1>
     </header>
 
     <section class="portal-card">
-      <h2>Amanota yawe</h2>
-      <p v-if="loading">Amakuru arimo gufunguka...</p>
+      <h2>{{ content.results }}</h2>
+      <p v-if="loading">{{ content.loading }}</p>
       <p v-if="errorMessage" class="error" role="alert">{{ errorMessage }}</p>
       <div v-if="!loading && !errorMessage && !results.length" class="empty">
-        Nta manota araboneka.
+        {{ content.empty }}
       </div>
       <div v-else-if="results.length" class="table-wrap">
         <table>
-          <thead><tr><th>Term</th><th>Subject</th><th>Score</th><th>Grade</th></tr></thead>
+          <thead>
+            <tr>
+              <th>{{ content.term }}</th>
+              <th>{{ content.subject }}</th>
+              <th>{{ content.score }}</th>
+              <th>{{ content.grade }}</th>
+            </tr>
+          </thead>
           <tbody>
             <tr v-for="item in results" :key="item.id">
               <td>{{ item.term }}</td><td>{{ item.subject }}</td><td>{{ item.score }}</td><td>{{ item.grade || '-' }}</td>

@@ -12,31 +12,31 @@ import Admin from '../views/admin.vue'
 import Portal from '../views/portal.vue'
 import SchoolInfo from '../views/schoolInfo.vue'
 
-function requireAccount() {
+function requireAccount(to) {
   try {
     const user = JSON.parse(localStorage.getItem('user') || 'null')
     return localStorage.getItem('token') && user
       ? true
-      : '/login'
+      : { path: '/login', query: { redirect: to.fullPath } }
   } catch {
-    return '/login'
+    return { path: '/login', query: { redirect: to.fullPath } }
   }
 }
 
 const routes = [
   { path: '/', component: Home },
-  { path: '/about', component: About, beforeEnter: requireAccount },
-  { path: '/services', component: Services, beforeEnter: requireAccount },
-  { path: '/gallery', component: Gallery, beforeEnter: requireAccount },
-  { path: '/contact', component: Contact, beforeEnter: requireAccount },
+  { path: '/about', component: About },
+  { path: '/services', component: Services },
+  { path: '/gallery', component: Gallery },
+  { path: '/contact', component: Contact },
   { path: '/login', component: Login },
   { path: '/register', component: Register },
   { path: '/admissions', component: Admissions, beforeEnter: requireAccount },
   { path: '/portal', component: Portal, beforeEnter: requireAccount },
-  { path: '/announcements', component: SchoolInfo, beforeEnter: requireAccount, meta: { type: 'announcements' } },
-  { path: '/calendar', component: SchoolInfo, beforeEnter: requireAccount, meta: { type: 'calendar' } },
-  { path: '/teachers', component: SchoolInfo, beforeEnter: requireAccount, meta: { type: 'teachers' } },
-  { path: '/parents', component: SchoolInfo, beforeEnter: requireAccount, meta: { type: 'parents' } },
+  { path: '/announcements', component: SchoolInfo, meta: { type: 'announcements' } },
+  { path: '/calendar', component: SchoolInfo, meta: { type: 'calendar' } },
+  { path: '/teachers', component: SchoolInfo, meta: { type: 'teachers' } },
+  { path: '/parents', component: SchoolInfo, meta: { type: 'parents' } },
   {
     path: '/admin',
     component: Admin,

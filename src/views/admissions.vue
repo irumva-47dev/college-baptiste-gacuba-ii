@@ -72,6 +72,8 @@ const translations = {
     submit: 'Submit Application',
     submitting: 'Submitting...',
     requestError: 'The application could not be saved. Please try again.',
+    invalidApplication: 'Please check the required application details and try again.',
+    loginRequired: 'Please log in to submit an application.',
     successTitle: 'Application received',
     applicationId: 'Application number',
     pending: 'Your application is pending review. Registration is not complete until the school confirms your payment.',
@@ -123,6 +125,8 @@ const translations = {
     submit: 'Ohereza Ubusabe',
     submitting: 'Ubusabe burimo koherezwa...',
     requestError: 'Ubusabe ntibwabitswe. Ongera ugerageze.',
+    invalidApplication: 'Reba amakuru yose asabwa, wongere ugerageze.',
+    loginRequired: 'Banza winjire muri konti yawe kugira ngo wohereze ubusabe.',
     successTitle: 'Ubusabe bwakiriwe',
     applicationId: 'Nimero y’ubusabe',
     pending: 'Ubusabe bwawe burasuzumwa. Kwiyandikisha ntikurangira ishuri ritaragenzura ubwishyu.',
@@ -171,14 +175,19 @@ async function submitApplication() {
     const response = await fetch(apiUrl('/api/admissions'), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`
       },
       body: JSON.stringify(form)
     })
     const data = await response.json()
 
     if (!response.ok) {
-      statusMessage.value = data.message || content.value.requestError
+      statusMessage.value = response.status === 400
+        ? content.value.invalidApplication
+        : response.status === 401
+          ? content.value.loginRequired
+          : content.value.requestError
       return
     }
 
