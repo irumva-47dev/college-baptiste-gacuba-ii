@@ -17,8 +17,8 @@
 <script setup>
 import { onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import Navbar from './components/Navbar.vue'
-import Footer from './components/Footer.vue'
+import Navbar from './components/navbar.vue'
+import Footer from './components/footer.vue'
 import { useSiteContentStore } from './stores/siteContent'
 import { apiUrl } from './services/api'
 
