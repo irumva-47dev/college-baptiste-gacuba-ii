@@ -3,7 +3,11 @@
   <nav class="navbar">
     <!-- SCHOOL LOGO / NAME -->
     <router-link to="/" class="logo">
-      <div class="logo-icon">CB</div>
+      <img
+        class="logo-icon"
+        src="/college-baptiste-gacuba-ii-logo.png"
+        alt="College Baptiste Gacuba II"
+      />
       <div class="logo-text">
         <span>{{ content.schoolLine1 }}</span>
         <strong>{{ content.schoolLine2 }}</strong>
@@ -183,16 +187,10 @@ function closeMenu() {
 }
 
 .logo-icon {
-  width: 45px;
-  height: 45px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: var(--school-gold);
-  color: var(--school-navy);
-  border-radius: 8px;
-  font-size: 17px;
-  font-weight: bold;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  object-position: center;
 }
 
 .logo-text {

@@ -207,7 +207,7 @@ export const siteDefaults = {
       school: 'School Name',
       email: 'Email Address',
       phone: 'Phone Number',
-      emailPlaceholder: 'irumvamugisha47@gmail.com',
+      emailPlaceholder: 'collegebaptistegacuba2@gmail.com',
       phonePlaceholder: 'School phone number to be added',
       sendMessage: 'Send Us a Message',
       fullName: 'Full Name',
@@ -235,7 +235,7 @@ export const siteDefaults = {
       school: 'Izina ry’Ishuri',
       email: 'Imeyili',
       phone: 'Telefoni',
-      emailPlaceholder: 'irumvamugisha47@gmail.com',
+      emailPlaceholder: 'collegebaptistegacuba2@gmail.com',
       phonePlaceholder: 'Telefoni y’ishuri izongerwamo',
       sendMessage: 'Twoherereze Ubutumwa',
       fullName: 'Amazina Yuzuye',
@@ -394,7 +394,7 @@ export const siteDefaults = {
       facebook: 'Facebook',
       instagram: 'Instagram',
       youtube: 'YouTube',
-      email: 'irumvamugisha47@gmail.com',
+      email: 'collegebaptistegacuba2@gmail.com',
       phone: 'School phone number to be added',
       copyright: '© 2026 College Baptiste Gacuba II. All Rights Reserved.'
     },
@@ -416,7 +416,7 @@ export const siteDefaults = {
       facebook: 'Facebook',
       instagram: 'Instagram',
       youtube: 'YouTube',
-      email: 'irumvamugisha47@gmail.com',
+      email: 'collegebaptistegacuba2@gmail.com',
       phone: 'Telefoni y’ishuri izashyirwamo',
       copyright: '© 2026 College Baptiste Gacuba II. Uburenganzira bwose burubahirijwe.'
     }

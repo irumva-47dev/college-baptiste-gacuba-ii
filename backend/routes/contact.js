@@ -2,7 +2,7 @@ const express = require('express');
 const { getDatabase } = require('../config/database');
 
 const router = express.Router();
-const recipient = 'irumvamugisha47@gmail.com';
+const recipient = 'collegebaptistegacuba2@gmail.com';
 
 router.post('/', async (req, res) => {
   const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';

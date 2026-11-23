@@ -5,6 +5,11 @@
 
       <!-- SCHOOL INFORMATION -->
       <div class="footer-section">
+        <img
+          class="footer-logo"
+          src="/college-baptiste-gacuba-ii-logo.png"
+          alt="College Baptiste Gacuba II"
+        />
         <h2>{{ content.school }}</h2>
 
         <p>{{ content.description }}</p>
@@ -124,7 +129,7 @@ const translations = {
     facebook: 'Facebook',
     instagram: 'Instagram',
     youtube: 'YouTube',
-    email: 'irumvamugisha47@gmail.com',
+    email: 'collegebaptistegacuba2@gmail.com',
     phone: 'School phone number to be added',
     copyright:
       '© 2026 College Baptiste Gacuba II. All Rights Reserved.'
@@ -149,7 +154,7 @@ const translations = {
     facebook: 'Facebook',
     instagram: 'Instagram',
     youtube: 'YouTube',
-    email: 'irumvamugisha47@gmail.com',
+    email: 'collegebaptistegacuba2@gmail.com',
     phone: 'Telefoni y’ishuri izashyirwamo',
     copyright:
       '© 2026 College Baptiste Gacuba II. Uburenganzira bwose burubahirijwe.'
@@ -176,6 +181,13 @@ const content = computed(() => {
   gap: 35px;
   max-width: 1200px;
   margin: auto;
+}
+
+.footer-logo {
+  width: 86px;
+  height: 86px;
+  object-fit: contain;
+  margin-bottom: 16px;
 }
 
 .footer-section h2 {
