@@ -34,9 +34,6 @@ const routes = [
   { path: '/admissions', component: Admissions, beforeEnter: requireAccount },
   { path: '/portal', component: Portal, beforeEnter: requireAccount },
   { path: '/announcements', component: SchoolInfo, meta: { type: 'announcements' } },
-  { path: '/calendar', component: SchoolInfo, meta: { type: 'calendar' } },
-  { path: '/teachers', component: SchoolInfo, meta: { type: 'teachers' } },
-  { path: '/parents', component: SchoolInfo, meta: { type: 'parents' } },
   {
     path: '/admin',
     component: Admin,

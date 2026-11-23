@@ -92,12 +92,9 @@ const labels = {
   'Hagarika': 'Disable',
   'Fungura': 'Enable',
   'Admin wenyine': 'Administrator',
-  'Amatangazo, ingengabihe, abarimu, n’amakuru y’ababyeyi': 'Announcements, calendar, teachers, and parent information',
+  'Amatangazo y’ishuri': 'School announcements',
   'Ubwoko bw’amakuru': 'Information type',
   'Amatangazo': 'Announcements',
-  'Ingengabihe y’amasomo': 'School calendar',
-  'Abarimu': 'Teachers',
-  'Amakuru y’ababyeyi': 'Parent information',
   'Ibisobanuro': 'Description',
   'Isomo cyangwa amakuru y’inyongera': 'Subject or additional information',
   'Bika amakuru': 'Save information',
@@ -683,15 +680,12 @@ onMounted(loadAdminData)
     </section>
 
     <section v-if="tab === 'school' && !loading" class="panel">
-      <h2>{{ tr('Amatangazo, ingengabihe, abarimu, n’amakuru y’ababyeyi') }}</h2>
+      <h2>{{ tr('Amatangazo y’ishuri') }}</h2>
       <div class="content-controls">
         <label>
           {{ tr('Ubwoko bw’amakuru') }}
           <select v-model="schoolType">
             <option value="announcements">{{ tr('Amatangazo') }}</option>
-            <option value="calendar">{{ tr('Ingengabihe y’amasomo') }}</option>
-            <option value="teachers">{{ tr('Abarimu') }}</option>
-            <option value="parents">{{ tr('Amakuru y’ababyeyi') }}</option>
           </select>
         </label>
       </div>

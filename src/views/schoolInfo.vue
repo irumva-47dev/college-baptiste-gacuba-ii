@@ -13,18 +13,12 @@ const dataType = computed(() => route.meta.type)
 const translations = {
   en: {
     announcements: { title: 'Announcements', subtitle: 'Latest school announcements', icon: 'bi-megaphone' },
-    calendar: { title: 'School Calendar', subtitle: 'School dates and events', icon: 'bi-calendar-event' },
-    teachers: { title: 'Teachers', subtitle: 'Our teachers and the subjects they teach', icon: 'bi-person-badge' },
-    parents: { title: 'Parent Information', subtitle: 'Information for parents to keep up with', icon: 'bi-people' },
     school: { title: 'School Information', subtitle: '', icon: 'bi-info-circle' },
     loading: 'Loading information...',
     empty: 'No information available.'
   },
   rw: {
     announcements: { title: 'Amatangazo', subtitle: 'Amatangazo mashya y’ishuri', icon: 'bi-megaphone' },
-    calendar: { title: 'Ingengabihe y’amasomo', subtitle: 'Iminsi n’ibikorwa by’ishuri', icon: 'bi-calendar-event' },
-    teachers: { title: 'Abarimu', subtitle: 'Abarimu n’amasomo bigisha', icon: 'bi-person-badge' },
-    parents: { title: 'Amakuru y’ababyeyi', subtitle: 'Ibyo ababyeyi bakeneye gukurikirana', icon: 'bi-people' },
     school: { title: 'Amakuru y’ishuri', subtitle: '', icon: 'bi-info-circle' },
     loading: 'Amakuru arimo gufunguka...',
     empty: 'Nta makuru aboneka.'

@@ -65,9 +65,6 @@
 
   <li><router-link to="/portal" @click="closeMenu">{{ content.portal }}</router-link></li>
   <li><router-link to="/announcements" @click="closeMenu">{{ content.announcements }}</router-link></li>
-  <li><router-link to="/calendar" @click="closeMenu">{{ content.calendar }}</router-link></li>
-  <li><router-link to="/teachers" @click="closeMenu">{{ content.teachers }}</router-link></li>
-  <li><router-link to="/parents" @click="closeMenu">{{ content.parents }}</router-link></li>
 
   <li>
     <router-link to="/admin" @click="closeMenu">
@@ -132,9 +129,6 @@ const translations = {
     admin: 'Admin',
     portal: 'Portal',
     announcements: 'Announcements',
-    calendar: 'Calendar',
-    teachers: 'Teachers',
-    parents: 'Parents',
     login: 'Login',
     register: 'Register'
   },
@@ -152,9 +146,6 @@ const translations = {
     admin: 'Ubuyobozi',
     portal: 'Urubuga rw’abanyeshuri',
     announcements: 'Amatangazo',
-    calendar: 'Ingengabihe',
-    teachers: 'Abarimu',
-    parents: 'Ababyeyi',
     login: 'Injira',
     register: 'Iyandikishe'
   }

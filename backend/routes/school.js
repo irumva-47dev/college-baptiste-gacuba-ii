@@ -7,10 +7,7 @@ const requireAuth = require('../middleware/requireAuth');
 const router = express.Router();
 
 const publicCollections = {
-  announcements: 'announcements',
-  calendar: 'school_calendar',
-  teachers: 'teachers',
-  parents: 'parent_information'
+  announcements: 'announcements'
 };
 
 router.get('/results/me', requireAuth, async (req, res) => {
