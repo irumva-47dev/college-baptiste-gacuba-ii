@@ -30,6 +30,21 @@ const routes = [
   { path: '/gallery', component: Gallery },
   { path: '/contact', component: Contact },
   { path: '/login', component: Login },
+  {
+    path: '/admin/login',
+    component: Login,
+    meta: { adminLogin: true },
+    beforeEnter: () => {
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || 'null')
+        return localStorage.getItem('token') && user?.role === 'admin'
+          ? '/admin'
+          : true
+      } catch {
+        return true
+      }
+    }
+  },
   { path: '/register', component: Register },
   { path: '/admissions', component: Admissions, beforeEnter: requireAccount },
   { path: '/portal', component: Portal, beforeEnter: requireAccount },
@@ -42,9 +57,9 @@ const routes = [
         const user = JSON.parse(localStorage.getItem('user') || 'null')
         return localStorage.getItem('token') && user?.role === 'admin'
           ? true
-          : '/login'
+          : '/admin/login'
       } catch {
-        return '/login'
+        return '/admin/login'
       }
     }
   }

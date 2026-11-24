@@ -1,12 +1,12 @@
 
 <template>
-  <div class="login-page">
+  <div class="login-page" :class="{ 'admin-login-page': isAdminLogin }">
     <div class="login-card">
 
       <!-- LOGIN HEADER -->
       <div class="login-header">
         <div class="login-icon">
-          <i class="bi bi-person-circle"></i>
+          <i :class="isAdminLogin ? 'bi bi-shield-lock' : 'bi bi-person-circle'"></i>
         </div>
 
         <h1>{{ content.title }}</h1>
@@ -72,12 +72,15 @@
       </form>
 
       <!-- REGISTER LINK -->
-      <div class="register-link">
+      <div v-if="!isAdminLogin" class="register-link">
         <p>
           {{ content.noAccount }}
           <router-link to="/register">
             {{ content.createAccount }}
           </router-link>
+        </p>
+        <p class="admin-login-link">
+          <router-link to="/admin/login">{{ content.adminLoginLink }}</router-link>
         </p>
       </div>
 
@@ -87,13 +90,16 @@
           {{ content.backHome }}
         </router-link>
       </div>
+      <div v-if="isAdminLogin" class="student-login-link">
+        <router-link to="/login">{{ content.studentLoginLink }}</router-link>
+      </div>
 
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useLanguageStore } from '../stores/language'
 import { useSiteContentStore } from '../stores/siteContent'
@@ -104,13 +110,24 @@ const route = useRoute()
 const languageStore = useLanguageStore()
 const siteContent = useSiteContentStore()
 
-const email = ref(localStorage.getItem('rememberedEmail') || '')
+const isAdminLogin = computed(() => route.meta.adminLogin === true)
+const rememberedEmailKey = computed(() => isAdminLogin.value
+  ? 'rememberedAdminEmail'
+  : 'rememberedEmail')
+const email = ref(localStorage.getItem(rememberedEmailKey.value) || '')
 const password = ref('')
-const remember = ref(!!localStorage.getItem('rememberedEmail'))
+const remember = ref(!!localStorage.getItem(rememberedEmailKey.value))
 
 const loading = ref(false)
 const message = ref('')
 const messageType = ref('error')
+
+watch(isAdminLogin, () => {
+  email.value = localStorage.getItem(rememberedEmailKey.value) || ''
+  remember.value = !!localStorage.getItem(rememberedEmailKey.value)
+  password.value = ''
+  message.value = ''
+})
 
 const translations = {
   en: {
@@ -130,6 +147,11 @@ const translations = {
     loginSuccess: 'Login successful! Welcome.',
     loginError: 'Invalid email or password.',
     serverError: 'Unable to connect to the server. Please try again.',
+    adminTitle: 'Administrator Login',
+    adminSubtitle: 'Sign in to manage the school website',
+    adminOnly: 'This page is for administrator accounts. Use the student login instead.',
+    adminLoginLink: 'Administrator login',
+    studentLoginLink: 'Student login',
   },
 
   rw: {
@@ -149,12 +171,25 @@ const translations = {
     loginSuccess: 'Winjiye neza! Murakaza neza.',
     loginError: 'Imeyili cyangwa ijambo ry’ibanga si byo.',
     serverError: 'Ntibishobotse kugera kuri server. Ongera ugerageze.',
+    adminTitle: 'Kwinjira k’Ubuyobozi',
+    adminSubtitle: 'Injira kugira ngo ucunge urubuga rw’ishuri',
+    adminOnly: 'Uru rupapuro rugenewe konti y’ubuyobozi. Koresha login y’abanyeshuri.',
+    adminLoginLink: 'Login y’ubuyobozi',
+    studentLoginLink: 'Login y’abanyeshuri',
   }
 }
 
 const content = computed(() => {
   const language = languageStore.language
-  return siteContent.merge('login', language, translations[language] || translations.en)
+  const text = siteContent.merge('login', language, translations[language] || translations.en)
+  return isAdminLogin.value
+    ? {
+        ...text,
+        title: text.adminTitle,
+        subtitle: text.adminSubtitle,
+        noAccount: '',
+      }
+    : text
 })
 
 async function handleLogin() {
@@ -181,15 +216,21 @@ async function handleLogin() {
       return
     }
 
+    if (isAdminLogin.value && data.user.role !== 'admin') {
+      messageType.value = 'error'
+      message.value = content.value.adminOnly
+      return
+    }
+
     // Save login token and user information
     localStorage.setItem('token', data.token)
     localStorage.setItem('user', JSON.stringify(data.user))
 
     // Remember email only when checkbox is selected
     if (remember.value) {
-      localStorage.setItem('rememberedEmail', email.value)
+      localStorage.setItem(rememberedEmailKey.value, email.value)
     } else {
-      localStorage.removeItem('rememberedEmail')
+      localStorage.removeItem(rememberedEmailKey.value)
     }
 
     messageType.value = 'success'
@@ -198,11 +239,13 @@ async function handleLogin() {
     password.value = ''
 
     const redirect = route.query.redirect
-    const destination = typeof redirect === 'string' &&
-      redirect.startsWith('/') &&
-      !redirect.startsWith('//')
-      ? redirect
-      : '/about'
+    const destination = isAdminLogin.value
+      ? '/admin'
+      : typeof redirect === 'string' &&
+        redirect.startsWith('/') &&
+        !redirect.startsWith('//')
+        ? redirect
+        : '/about'
 
     setTimeout(() => {
       router.push(data.user.role === 'admin' ? '/admin' : destination)
@@ -240,6 +283,20 @@ async function handleLogin() {
   padding: 40px;
   border-radius: 15px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+
+.admin-login-page {
+  background:
+    linear-gradient(rgba(8, 20, 36, 0.78), rgba(8, 20, 36, 0.78)),
+    url('/schol.png') center 42% / cover no-repeat;
+}
+
+.admin-login-page .login-card {
+  border-top-color: var(--school-navy);
+}
+
+.admin-login-page .login-icon {
+  color: var(--school-navy);
 }
 
 .login-header {
@@ -364,6 +421,22 @@ async function handleLogin() {
   color: var(--school-gold-deep);
   font-weight: bold;
   text-decoration: none;
+}
+
+.admin-login-link {
+  margin-top: 12px;
+}
+
+.admin-login-link a,
+.student-login-link a {
+  color: var(--school-navy);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.student-login-link {
+  margin-top: 18px;
+  text-align: center;
 }
 
 .back-home {
