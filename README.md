@@ -1,54 +1,51 @@
-<<<<<<< HEAD
-# mugisha
+# college-baptiste-gacuba-ii
 
-This template should help get you started developing with Vue 3 in Vite.
+College Baptiste Gacuba II school website, built with Vue and Express.
 
-## Recommended IDE Setup
+## Setup
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+Install the frontend dependencies from the repository root:
 
 ```sh
 npm install
 ```
 
-### Database setup
+Copy `backend/.env.example` to `backend/.env`, then configure the environment
+variables. For MongoDB Atlas:
 
-Start MySQL/MariaDB in XAMPP. For a new database, import `backend/database.sql`.
-For an existing database, apply only migrations that have not already been run;
-`backend/contact-migration.sql` creates the contact-message table used by the
-contact form and admin inbox. Configure the connection in `backend/.env` using
-`backend/.env.example`, then start the API with `node server.js` from
-`backend/`. Set `FRONTEND_URL` to the frontend origin. Copy the root
-`.env.example` to `.env` and set `VITE_API_BASE_URL` if the API is not at
-`http://localhost:5000`.
+1. Create an Atlas cluster and a database user.
+2. Allow your development machine's IP address in the Atlas network access list.
+3. Copy the cluster connection string into `MONGODB_URI` in `backend/.env`.
+   Replace the username, password, and cluster name. URL-encode special
+   characters in the password.
+4. Set `MONGODB_DB_NAME` to the database name the API should use.
 
-### Compile and Hot-Reload for Development
+All backend features use this database, including accounts, admissions, contact
+messages, website content, analytics, announcements, and student results.
+Existing data in a separate MySQL database is not copied automatically.
+
+Keep `backend/.env` private; do not commit Atlas credentials.
+In Atlas Network Access, allow only the development machine's IP and the
+deployment server's outbound IP. Avoid `0.0.0.0/0`, which allows connections
+from any IP address.
+
+Start the backend from the `backend` directory:
+
+```sh
+node server.js
+```
+
+Start the frontend from the repository root:
 
 ```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+The frontend expects the API at `http://localhost:5000` by default. If needed,
+copy the root `.env.example` to `.env` and set `VITE_API_BASE_URL`.
+
+Build the frontend with:
 
 ```sh
 npm run build
 ```
-=======
-# college-baptiste-gacuba-ii
-College Baptiste Gacuba II School Website
->>>>>>> b954068d264ccda1adc16ad08a50426dc066aeb5
